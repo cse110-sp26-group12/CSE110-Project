@@ -1,1 +1,1 @@
-
+The prototype I created is a website called AgileFlow that allows to create standups, new tasks, see updates from other teams, and the status of what each team member is currently working on or if they are available. I think one thing we could improve on our own is add a messaging feature.
