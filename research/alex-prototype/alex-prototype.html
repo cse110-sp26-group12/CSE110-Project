@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agile Project Manager</title>
+    <link rel="stylesheet" href="alex-prototype.css">
+</head>
+<body>
+    <!-- Login View -->
+    <div id="view-login" style="display: none;">
+        <div class="login-card">
+            <div id="login-form-container">
+                <h2>Welcome to AgilePro</h2>
+                <p style="margin-bottom: 20px; color: var(--gray);">Please enter your credentials.</p>
+                <form onsubmit="app.login(event)">
+                    <div class="form-group">
+                        <input type="text" id="loginName" required placeholder="User Name">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="loginPass" required placeholder="Password">
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%;">Login</button>
+                </form>
+                <div id="login-error" class="error-msg">Incorrect name or password.</div>
+                <a class="auth-toggle" onclick="app.toggleAuthMode('signup')">Don't have an account? Create one</a>
+            </div>
+
+            <div id="signup-form-container" style="display: none;">
+                <h2>Join AgilePro</h2>
+                <p style="margin-bottom: 20px; color: var(--gray);">Create your account to start managing projects.</p>
+                <form onsubmit="app.register(event)">
+                    <div class="form-group">
+                        <input type="text" id="signupName" required placeholder="Pick a User Name">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="signupPass" required placeholder="Create a Password">
+                    </div>
+                    <button type="submit" class="btn-success" style="width: 100%;">Create Account</button>
+                </form>
+                <div id="signup-error" class="error-msg">That name is already taken.</div>
+                <a class="auth-toggle" onclick="app.toggleAuthMode('login')">Already have an account? Login</a>
+            </div>
+        </div>
+    </div>
+
+    <aside>
+        <h1>AgilePro</h1>
+        
+        <div class="project-selector">
+            <label>Project / Organization</label>
+            <select id="projectSelect" onchange="app.switchProject(this.value)">
+                <!-- Projects will be loaded here -->
+            </select>
+            <button class="btn-primary" style="width: 100%; margin-top: 10px; padding: 5px;" onclick="app.showModal('projectModal')">+ New Project</button>
+        </div>
+
+        <nav>
+            <ul>
+                <li onclick="app.showView('tasks')" id="nav-tasks" class="active"><span>📋</span> Tasks</li>
+                <li onclick="app.showView('standup')" id="nav-standup"><span>☀️</span> Stand-up</li>
+                <li onclick="app.showView('members')" id="nav-members"><span>👥</span> Members</li>
+                <li onclick="app.showView('inbox')" id="nav-inbox"><span>📥</span> Inbox</li>
+                <li onclick="app.showView('history')" id="nav-history"><span>🕒</span> History</li>
+            </ul>
+        </nav>
+
+        <div class="user-info" id="sidebarUserInfo">
+            <!-- User info and logout will be loaded here -->
+        </div>
+    </aside>
+
+    <main>
+        <!-- Tasks View -->
+        <section id="view-tasks" class="view active">
+            <div id="taskProgressContainer">
+                <!-- Progress bar will be rendered here -->
+            </div>
+            <div class="header-actions">
+                <h2>Active Tasks</h2>
+                <button class="btn-success" onclick="app.showModal('taskModal')">+ Add Task</button>
+            </div>
+            <div id="taskList" class="task-list">
+                <!-- Tasks will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Stand-up View -->
+        <section id="view-standup" class="view">
+            <div class="header-actions">
+                <h2>Daily Stand-up</h2>
+                <button class="btn-primary" onclick="app.showModal('standupModal')">Submit Update</button>
+            </div>
+            <div id="standupFeed">
+                <!-- Stand-ups will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Members View -->
+        <section id="view-members" class="view">
+            <div class="header-actions">
+                <h2>Project Members</h2>
+                <button class="btn-primary" onclick="app.showModal('inviteModal')">+ Invite Member</button>
+            </div>
+            <div id="memberList" class="member-list">
+                <!-- Members will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Inbox View -->
+        <section id="view-inbox" class="view">
+            <div class="header-actions">
+                <h2>Your Inbox</h2>
+            </div>
+            <div id="inboxList" class="task-list">
+                <!-- Invitations will be loaded here -->
+            </div>
+        </section>
+
+        <!-- History View -->
+        <section id="view-history" class="view">
+            <div class="header-actions">
+                <h2>Task History</h2>
+            </div>
+            <div id="historyList" class="task-list">
+                <!-- Completed tasks will be loaded here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Modals -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <h3>Add New Task</h3>
+            <form onsubmit="app.addTask(event)">
+                <div class="form-group">
+                    <label>Task Description</label>
+                    <input type="text" id="taskDesc" required placeholder="What needs to be done?">
+                </div>
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select id="taskPriority">
+                        <option value="high">High</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" onclick="app.hideModal('taskModal')">Cancel</button>
+                    <button type="submit" class="btn-success">Add Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="standupModal" class="modal">
+        <div class="modal-content">
+            <h3>Submit Stand-up Update</h3>
+            <form onsubmit="app.addStandup(event)">
+                <div class="form-group">
+                    <label>Member Name</label>
+                    <select id="standupMember" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Previously Completed</label>
+                    <textarea id="standupPrev" rows="2" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Planned for Today</label>
+                    <textarea id="standupPlanned" rows="2" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Constraints / Blockers</label>
+                    <textarea id="standupConstraints" rows="2"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" onclick="app.hideModal('standupModal')">Cancel</button>
+                    <button type="submit" class="btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="inviteModal" class="modal">
+        <div class="modal-content">
+            <h3>Invite Project Member</h3>
+            <form onsubmit="app.inviteMember(event)">
+                <div class="form-group">
+                    <label>Member Name</label>
+                    <input type="text" id="inviteName" required placeholder="Enter exact user name">
+                </div>
+                <div id="invite-error" class="error-msg"></div>
+                <div id="invite-success" class="error-msg" style="background:#e8f5e9; color:var(--success); border-color:rgba(46,204,113,0.2);"></div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top:15px;">
+                    <button type="button" onclick="app.hideModal('inviteModal')">Cancel</button>
+                    <button type="submit" class="btn-primary">Send Invitation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <h3>Create New Project</h3>
+            <form onsubmit="app.addProject(event)">
+                <div class="form-group">
+                    <label>Project Name</label>
+                    <input type="text" id="projectName" required>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" onclick="app.hideModal('projectModal')">Cancel</button>
+                    <button type="submit" class="btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="alex-prototype.js"></script>
+</body>
+</html>
