@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SE SitRep | Mission Control</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="mission-control">
+    <header class="app-header">
+        <div class="logo">
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <h1>SE SITREP</h1>
+        </div>
+        <nav class="main-nav">
+            <button id="nav-dashboard" class="active">Briefing</button>
+            <button id="nav-roster">Roster</button>
+            <button id="nav-warroom">War Room</button>
+            <button id="nav-checkin" class="cta">Submit SitRep</button>
+        </nav>
+        <div class="system-time" id="system-time">00:00:00 UTC</div>
+    </header>
+
+    <main id="app-content">
+        <!-- Views will be rendered here -->
+        <section id="dashboard-view" class="view active">
+            <div class="stats-grid">
+                <div class="stat-card" id="stat-active">
+                    <span class="label">Operational</span>
+                    <span class="value">0</span>
+                </div>
+                <div class="stat-card" id="stat-blocked">
+                    <span class="label">Blocked</span>
+                    <span class="value">0</span>
+                </div>
+                <div class="stat-card" id="stat-mood">
+                    <span class="label">Avg Sentiment</span>
+                    <span class="value">0.0</span>
+                </div>
+                <div class="stat-card" id="stat-agents">
+                    <span class="label">Agent Load</span>
+                    <span class="value">0%</span>
+                </div>
+            </div>
+
+            <div class="pulse-lane">
+                <h2><span class="pulse-dot"></span> Agent Pulse</h2>
+                <div id="agent-pulse-container" class="agent-grid">
+                    <!-- Agent cards here -->
+                </div>
+            </div>
+
+            <div class="recent-reports">
+                <h2>Recent SitReps</h2>
+                <div id="reports-container" class="reports-list">
+                    <!-- Report items here -->
+                </div>
+            </div>
+        </section>
+
+        <section id="roster-view" class="view">
+            <div class="roster-grid" id="roster-container">
+                <!-- Member cards here -->
+            </div>
+        </section>
+
+        <section id="warroom-view" class="view">
+            <div class="warroom-container">
+                <h2>The War Room: Sync Coordination</h2>
+                <div class="availability-matrix" id="availability-matrix">
+                    <!-- Matrix will be rendered here -->
+                </div>
+            </div>
+        </section>
+
+        <section id="checkin-view" class="view">
+            <div class="form-container">
+                <h2>New SitRep Submission</h2>
+                <form id="sitrep-form">
+                    <div class="form-group">
+                        <label for="member-select">Identity</label>
+                        <select id="member-select" required>
+                            <option value="">Select Member...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status-input">Current Mission (What are you doing?)</label>
+                        <textarea id="status-input" placeholder="E.g. Refactoring the auth module..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="blockers-input">Roadblocks (Any blockers?)</label>
+                        <textarea id="blockers-input" placeholder="E.g. Waiting on API docs..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="sentiment-input">Vital Signs (Sentiment 1-5)</label>
+                            <input type="range" id="sentiment-input" min="1" max="5" step="1" value="3">
+                            <div class="sentiment-labels">
+                                <span>Bad</span>
+                                <span>Nominal</span>
+                                <span>Optimal</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="coverage-input">
+                        <label for="coverage-input">Request Coverage? (Do you need someone to cover for you?)</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="availability-input">Next Sync Availability</label>
+                        <input type="text" id="availability-input" placeholder="E.g. Tomorrow 10am-12pm">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" id="cancel-checkin">Abort</button>
+                        <button type="submit" class="btn-primary">Transmit SitRep</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <p>SE SITREP &copy; 2026 | Protocol: 0.1.0-ALPHA</p>
+    </footer>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
