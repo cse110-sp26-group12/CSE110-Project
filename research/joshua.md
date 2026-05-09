@@ -129,6 +129,8 @@
 
 ***OH MY SOYENCE AI IS CHANGING EVERYTHING LITERALLY EVERYTHING HAS TO INCLUDE IT "How does it change with AI agents in the mix? Do they need tracking too?" in project prompt, low end of must cause it's probably one of the worst features in terms of cost-reward***
 
+---
+
 ### Should
 
 * Submitting user stories
@@ -143,6 +145,8 @@
 
 ***Facilitates Agile process***
 
+---
+
 ### Could
 
 * Inbox
@@ -152,6 +156,8 @@
 * Github Feed
 
 ***Kool feature but the functionality it provides in terms of task-tracking can be handled more generally on-site; save it for the end as an extension of task-tracking if we have time***
+
+---
 
 ### Won't
 
