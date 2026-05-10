@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/cse110-sp26-group12/CSE110-Project#readme",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "eslint": "^10.3.0",
     "jest": "^30.4.2",
     "prettier": "^3.8.3"
