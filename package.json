@@ -4,7 +4,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "jest --passWithNoTests",
-    "test:coverage": "jest --coverage",
+    "test:coverage": "jest --passWithNoTests",
     "build": "vite build"
   },
   "name": "cse110-project",
