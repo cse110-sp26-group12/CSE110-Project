@@ -1,0 +1,40 @@
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table _meta {
+  version string //e.g. 1.0.2.1
+  created_at timestamp
+}
+
+Table users {
+  id integer [primary key]
+  user_name string [not null, unique, note: 'informal login auth, e.g. jhops48']
+  user_email string [not null, unique]
+  pass_hash string [not null, note: 'use a slow, memory-hard hash like Argon2id']
+  created_at timestamp [default: 'Now()']
+  deleted_at timestamp [null, note: 'soft-to-hard deletion scheme; if column is not NULL then row is soft-deleted and will be hard-deleted after timestamp in kill_after']
+  kill_after timestamp [null, note: 'soft-to-hard deletion scheme: if column is not NULL then row will be hard-deleted after this date']
+}
+
+Table teams {
+  id integer [primary key]
+  team_name string [not null]
+  invite_code string [not null, unique]
+  created_at timestamp [default: 'Now()']
+  created_by integer
+  deleted_at timestamp [null, note: 'soft-to-hard deletion scheme; if column is not NULL then row is soft-deleted and will be hard-deleted after timestamp in kill_after']
+  kill_after timestamp [null, note: 'soft-to-hard deletion scheme: if column is not NULL then row will be hard-deleted after this date']
+}
+Ref: teams.created_by < users.id
+
+Table team_memberships {
+  id integer [primary key]
+  user_id string [not null]
+  team_id string [not null]
+  display_name string [not null, note: 'formal, e.g. Jimmy Hopkins']
+  role string [default: 'member']
+  joined_at timestamp [default: 'Now()']
+  left_at timestamp [null, note: 'membership permeates as long as team exists so user can rejoin']
+  note: 'one unique membership per user/team'
+}
+Ref: team_memberships.user_id < users.id
+Ref: team_memberships.team_id < teams.id
