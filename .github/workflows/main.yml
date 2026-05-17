@@ -6,6 +6,7 @@ on:
       - main
       - implementing
       - feature/**
+      - task/**
   pull_request:
     branches:
       - main

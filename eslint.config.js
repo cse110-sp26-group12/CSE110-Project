@@ -14,4 +14,19 @@ export default [
       quotes: ['error', 'single'],
     },
   },
+
+  // Jest test files
+  {
+    files: ['**/__tests__/**/*.js', '**/*.test.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        describe: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        test: 'readonly',
+      }
+    }
+  }
 ];
