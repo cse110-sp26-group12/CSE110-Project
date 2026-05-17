@@ -3,8 +3,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "jest --passWithNoTests",
-    "test:coverage": "jest --passWithNoTests",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
     "build": "echo Build step placeholder"
   },
   "name": "cse110-project",
