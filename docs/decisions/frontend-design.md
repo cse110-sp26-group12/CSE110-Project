@@ -33,4 +33,4 @@
 
 # Example mockups or wireframes (if available)
 
-*Waiting until list of features is finalized*
+![example_mockup](example_mock_up.png)
