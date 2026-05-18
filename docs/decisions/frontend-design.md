@@ -5,7 +5,9 @@
 
 # Descriptions of all planned pages/tabs
 
-*Waiting until list of features is finalized*
+Daily StandUp Tab - Contains the sections where members can do a standup report. There are three core questions in the stand up, asking the members what they did yesterday, what they will do today, and identifying any obstacles.
+Through this, submitting standups allows members to update their team members on their progress while addressing their next steps.
+
 
 # Navigation flow
 
@@ -14,8 +16,19 @@
   - Prefer top bar instead of side bar
 
 # Proposed layouts and interface structure
+|           UI Element            |          Color          |       Hex       |
+| ------------------------------- | ----------------------- | :-------------: |
+| Navbar background               | Dark charcoal           |     #252525     |
+| Main page background            | Warm cream              |     #F3EEE6     |
+| Form card background            | Soft ivory              |     #FAF8F5     |
+| Primary text                    | Dark gray               |     #2F2F2F     |
+| Input borders                   | Light beige/taupe       |     #D8CFC2     |
+| Active tab underline            | Muted red               |     #D66A59     |
+| Submit button                   | Terracotta              |     #D5644F     |
+| Submit button darker edge/hover | Deep terracotta         |     #BE5242     |
+| Shadow color                    | Soft black transparency | rgba(0,0,0,.08) |
 
-*Waiting until list of features is finalized*
+
 
 # Color/theme recommendations
 - Sri’s prototype has a good general vibe and color scheme
