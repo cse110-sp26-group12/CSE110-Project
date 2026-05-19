@@ -1,0 +1,396 @@
+:root {
+  --nav-bg: #252525;
+  --page-bg: #f3eee6;
+  --card-bg: #faf8f5;
+  --text: #2f2f2f;
+  --muted: #6e665e;
+  --border: #d8cfc2;
+  --accent: #d66a59;
+  --button: #d5644f;
+  --button-hover: #be5242;
+  --shadow: rgba(0, 0, 0, 0.08);
+  --blocker-bg: #fff0ec;
+  --done-bg: #eef7ef;
+  --progress-bg: #fff6e5;
+}
+
+body.dark {
+  --nav-bg: #181818;
+  --page-bg: #1f1e1c;
+  --card-bg: #2b2926;
+  --text: #f4efe8;
+  --muted: #c9bfb4;
+  --border: #5a5149;
+  --accent: #e47a68;
+  --button: #d5644f;
+  --button-hover: #be5242;
+  --shadow: rgba(0, 0, 0, 0.25);
+  --blocker-bg: #3a2420;
+  --done-bg: #223428;
+  --progress-bg: #3a3120;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--page-bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--nav-bg);
+  color: white;
+  border-bottom: 4px solid var(--accent);
+}
+
+.nav-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0.9rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.brand {
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  font-size: 1.15rem;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-size: 0.95rem;
+}
+
+.nav-links a {
+  color: #f7f2ec;
+  text-decoration: none;
+  padding-bottom: 0.2rem;
+  border-bottom: 2px solid transparent;
+}
+
+.nav-links a.active,
+.nav-links a:hover {
+  border-bottom-color: var(--accent);
+}
+
+.theme-toggle {
+  border: 1px solid #666;
+  background: transparent;
+  color: white;
+  padding: 0.45rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.5fr 0.9fr;
+  gap: 1.5rem;
+  align-items: stretch;
+  margin-bottom: 1.5rem;
+}
+
+.hero-card,
+.form-card,
+.summary-card,
+.standup-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 22px var(--shadow);
+}
+
+.hero-card {
+  padding: 2rem;
+}
+
+.eyebrow {
+  color: var(--accent);
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin: 0 0 0.6rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2rem, 3vw, 2.6rem);
+  line-height: 1.15;
+}
+
+.hero-card p {
+  max-width: 700px;
+  color: var(--muted);
+  font-size: 1.02rem;
+  margin: 1rem 0 0;
+}
+
+.summary-card {
+  padding: 1.25rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.metric {
+  border-left: 4px solid var(--accent);
+  padding: 0.65rem 0.85rem;
+  background: rgba(216, 207, 194, 0.18);
+}
+
+.metric span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.metric strong {
+  font-size: 1.35rem;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 0.9fr;
+  gap: 1.5rem;
+  align-items: start;
+  scroll-margin-top: 95px;
+}
+
+.form-card {
+  padding: 1.5rem;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.85rem;
+}
+
+.section-title h2 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.date-pill {
+  border: 1px solid var(--border);
+  padding: 0.3rem 0.55rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+label {
+  display: block;
+  font-weight: 700;
+  margin: 1rem 0 0.35rem;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  padding: 0.8rem;
+  font: inherit;
+  outline: none;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(214, 106, 89, 0.15);
+}
+
+textarea {
+  min-height: 95px;
+  resize: vertical;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.submit-btn {
+  margin-top: 1.25rem;
+  width: 100%;
+  background: var(--button);
+  color: white;
+  border: 0;
+  border-bottom: 4px solid var(--button-hover);
+  padding: 0.9rem 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.submit-btn:hover {
+  background: var(--button-hover);
+}
+
+.standups {
+  display: grid;
+  gap: 1rem;
+}
+
+.empty-state {
+  background: var(--card-bg);
+  border: 1px dashed var(--border);
+  padding: 2rem 1.25rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+.empty-state p {
+  margin: 0;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.empty-state span {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.standup-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.standup-card {
+  padding: 1.15rem;
+}
+
+.standup-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 0.75rem;
+}
+
+.person {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.role {
+  margin: 0.1rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.status {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 0.25rem 0.45rem;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.status.done {
+  background: var(--done-bg);
+}
+
+.status.progress {
+  background: var(--progress-bg);
+}
+
+.status.blocker {
+  background: var(--blocker-bg);
+  color: var(--accent);
+}
+
+.standup-section {
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--border);
+}
+
+.standup-section strong {
+  display: block;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.2rem;
+}
+
+.standup-section p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.placeholder-section {
+  margin-top: 1.5rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 22px var(--shadow);
+  padding: 1.5rem;
+  scroll-margin-top: 95px;
+}
+
+.placeholder-section h2 {
+  margin-top: 0;
+}
+
+.placeholder-section p {
+  color: var(--muted);
+}
+
+.footer-note {
+  margin-top: 1.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+@media (max-width: 850px) {
+  .hero,
+  .layout,
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-inner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+  }
+}
