@@ -1,0 +1,33 @@
+{
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format:check": "prettier --check .",
+    "format:write": "prettier --write .",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+    "build": "echo Build step placeholder"
+  },
+  "name": "cse110-project",
+  "version": "1.0.0",
+  "description": "Repository for Porygon12's Spring CSE110 Project",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cse110-sp26-group12/CSE110-Project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/cse110-sp26-group12/CSE110-Project/issues"
+  },
+  "homepage": "https://github.com/cse110-sp26-group12/CSE110-Project#readme",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.3.0",
+    "jest": "^30.4.2",
+    "prettier": "^3.8.3"
+  }
+}
