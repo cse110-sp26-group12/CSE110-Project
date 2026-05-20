@@ -82,15 +82,22 @@ Schema and backend must be designed to facilitate migration between databse setu
 
 ### Relationships
 
+Sessions <- Users
+
 Teams <- Users
+<br>
 Teams -> Projects <- Team Members
+<br>
 Tasks <- Projects
 
 Users -> Team Members <- Teams
+<br>
 Team Members -> Project Members <- Projects
+<br>
 Project Members -> Task Members <- Tasks
 
 Team Members -> Check-Ins <- Projects
+<br>
 Team Members -> Cover Requests <- Projects
 
 ### Constraints
