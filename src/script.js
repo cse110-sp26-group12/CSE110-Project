@@ -1,39 +1,31 @@
-function createStandup(name, done, todo, blockers) {
-  return {
-    name,
-    done,
-    todo,
-    blockers,
-    submittedAt: new Date().toISOString(),
-  };
-}
+import { createStandup } from './standup.js';
 
-const toggle = document.getElementById("themeToggle");
-const submitButton = document.querySelector(".submit-btn");
-const standupList = document.getElementById("standupList");
-const emptyState = document.getElementById("emptyState");
+const toggle = document.getElementById('themeToggle');
+const submitButton = document.querySelector('.submit-btn');
+const standupList = document.getElementById('standupList');
+const emptyState = document.getElementById('emptyState');
 
-const submittedCount = document.getElementById("submittedCount");
-const blockerCount = document.getElementById("blockerCount");
-const progressCount = document.getElementById("progressCount");
+const submittedCount = document.getElementById('submittedCount');
+const blockerCount = document.getElementById('blockerCount');
+const progressCount = document.getElementById('progressCount');
 
 let totalSubmissions = 0;
 let totalBlockers = 0;
 let totalInProgress = 0;
 
-toggle.addEventListener("click", () => {
-  document.body.classList.toggle("dark");
+toggle.addEventListener('click', () => {
+  document.body.classList.toggle('dark');
 });
 
-submitButton.addEventListener("click", () => {
-  const name = document.getElementById("name").value.trim();
-  const status = document.getElementById("status").value;
-  const yesterday = document.getElementById("yesterday").value.trim();
-  const today = document.getElementById("today").value.trim();
-  const blockers = document.getElementById("blockers").value.trim();
+submitButton.addEventListener('click', () => {
+  const name = document.getElementById('name').value.trim();
+  const status = document.getElementById('status').value;
+  const yesterday = document.getElementById('yesterday').value.trim();
+  const today = document.getElementById('today').value.trim();
+  const blockers = document.getElementById('blockers').value.trim();
 
   if (!name || !yesterday || !today) {
-    alert("Please fill out your name, yesterday's work, and today's plan.");
+    alert('Please fill out your name, yesterday\'s work, and today\'s plan.');
     return;
   }
 
@@ -41,15 +33,15 @@ submitButton.addEventListener("click", () => {
   // This follows the same structure as the team's createStandup helper.
   const standup = createStandup(name, yesterday, today, blockers);
 
-  emptyState.style.display = "none";
+  emptyState.style.display = 'none';
 
-  let statusClass = "done";
+  let statusClass = 'done';
 
-  if (status === "In progress") {
-    statusClass = "progress";
+  if (status === 'In progress') {
+    statusClass = 'progress';
     totalInProgress++;
-  } else if (status === "Blocked") {
-    statusClass = "blocker";
+  } else if (status === 'Blocked') {
+    statusClass = 'blocker';
   }
 
   if (standup.blockers) {
@@ -58,8 +50,8 @@ submitButton.addEventListener("click", () => {
 
   totalSubmissions++;
 
-  const card = document.createElement("article");
-  card.classList.add("standup-card");
+  const card = document.createElement('article');
+  card.classList.add('standup-card');
 
   card.innerHTML = `
     <div class="standup-header">
@@ -82,7 +74,7 @@ submitButton.addEventListener("click", () => {
 
     <div class="standup-section">
       <strong>Blockers</strong>
-      <p>${standup.blockers || "No blockers reported."}</p>
+      <p>${standup.blockers || 'No blockers reported.'}</p>
     </div>
   `;
 
@@ -92,9 +84,9 @@ submitButton.addEventListener("click", () => {
   blockerCount.textContent = totalBlockers;
   progressCount.textContent = totalInProgress;
 
-  document.getElementById("name").value = "";
-  document.getElementById("status").value = "On track";
-  document.getElementById("yesterday").value = "";
-  document.getElementById("today").value = "";
-  document.getElementById("blockers").value = "";
+  document.getElementById('name').value = '';
+  document.getElementById('status').value = 'On track';
+  document.getElementById('yesterday').value = '';
+  document.getElementById('today').value = '';
+  document.getElementById('blockers').value = '';
 });

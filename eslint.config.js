@@ -8,6 +8,12 @@ export default [
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
+      globals: {
+        window: 'readonly',
+        document: 'readonly',
+        alert: 'readonly',
+        console: 'readonly',
+      },
     },
     rules: {
       semi: ['error', 'always'],
@@ -26,7 +32,7 @@ export default [
         it: 'readonly',
         expect: 'readonly',
         test: 'readonly',
-      }
-    }
-  }
+      },
+    },
+  },
 ];
