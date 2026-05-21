@@ -14,7 +14,7 @@ Clients are stupid, malicious, unpredictable, and uncontrollable. Let the fronte
 
 #### API
 
-Parse frontend requests and validate input.  Return HTTP responses. Call into the service layer.
+Parse frontend requests and validate input. Return HTTP responses. Call into the service layer.
 
 #### Service
 
@@ -58,7 +58,7 @@ Schema and backend must be designed to facilitate migration between databse setu
 
 ### Tables
 
-**_meta** - current database version and last update.
+**\_meta** - current database version and last update.
 
 **Users** - persistent user info for login authentication and account management. Modeled to support a soft-to-hard deletion scheme; user can delete their account after which it will be soft-deleted and remain in a read-only state for some amount of time, after which it will be hard-deleted from the database and, to preserve privacy, all activity associated with that account will also be deleted. Accounts may be recovered any time before hard deletion.
 
@@ -78,7 +78,7 @@ Schema and backend must be designed to facilitate migration between databse setu
 
 **Task Members** - a subset of project members; project members associated with a task who may assign or unassign themselves to said task while presving activity (activity will be removed on hard account deletion).
 
-**Cover Requests** - associated with a team member and a project. Can be given a modifiable start and end date, but will be hard-deleted after the end date has been passed. Can also be hard-deleted anytime prior by poster of cover request or a project administrator. 
+**Cover Requests** - associated with a team member and a project. Can be given a modifiable start and end date, but will be hard-deleted after the end date has been passed. Can also be hard-deleted anytime prior by poster of cover request or a project administrator.
 
 ### Relationships
 
@@ -138,4 +138,4 @@ Based on our "musts":
 
 ### Visualization/Modification
 
-Paste the contents of [schema_model.txt](./db/schema_model.txt) into the code editor at dbdiagram.io. Changes will be saved locally to your dbdiagram account. Once you are ready to commit any changes you made, simply overwrite the current contents of wip-schema.txt. Sharing the project directly is a "pro" feature so this is the workaround we have to use. If you would like to propose a better methodology please do so.
+Paste the contents of wip-schema.txt into the code editor at dbdiagram.io. Changes will be saved locally to your dbdiagram account. Once you are ready to commit any changes you made, simply overwrite the current contents of wip-schema.txt. Sharing the project directly is a "pro" feature so this is the workaround we have to use. If you would like to propose a better methodology please do so.
