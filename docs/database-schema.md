@@ -10,7 +10,7 @@ This database is designed to store all server-side information including login c
 
 #### Frontend
 
-Clients are stupid, malicious, unpredictable, and uncontrollable. Let the frontend serve purely as a messenger of inputs given to and a displayer of pretty pre-formatted shapes received from API calls. This is not the kind of program that requires heavy client-side work.
+Let the frontend serve purely as a messenger of inputs given to and a displayer of pretty pre-formatted shapes received from API calls. This is not the kind of program that requires heavy client-side work.
 
 #### API
 
@@ -18,7 +18,7 @@ Parse frontend requests and validate input. Return HTTP responses. Call into the
 
 #### Service
 
-Handle authorization, enforce permissions, works data between repos. A lot of logic.
+Handle authorization, enforce permissions, works data between repos. A lot of logic and the main security layer.
 
 #### Data Respositories
 
