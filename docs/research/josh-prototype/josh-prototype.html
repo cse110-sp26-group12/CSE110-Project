@@ -1,0 +1,348 @@
+<!-- Courtesy of Clawd Ayy Eye -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SitRep — SE Team Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="josh-prototype.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ══════════ SIDEBAR ══════════ -->
+  <nav id="sidebar">
+    <div class="logo-area">
+      <div class="logo-icon">SR</div>
+      <div>
+        <div class="logo-text">SitRep</div>
+        <div class="logo-sub">SE Team Hub</div>
+      </div>
+    </div>
+
+    <div class="nav-list">
+      <div class="nav-group-label">Overview</div>
+      <div class="nav-item active" data-section="team" onclick="navTo('team')">
+        <span class="nav-icon">👥</span> Team Status
+      </div>
+
+      <div class="nav-group-label">Daily Ops</div>
+      <div class="nav-item" data-section="standups" onclick="navTo('standups')">
+        <span class="nav-icon">📋</span> Daily Standups
+      </div>
+      <div class="nav-item" data-section="work" onclick="navTo('work')">
+        <span class="nav-icon">🔧</span> Current Work
+      </div>
+      <div class="nav-item" data-section="blockers" onclick="navTo('blockers')">
+        <span class="nav-icon">🚧</span> Blockers
+        <span class="nav-badge" id="blocker-nav-badge">4</span>
+      </div>
+
+      <div class="nav-group-label">Scheduling</div>
+      <div class="nav-item" data-section="schedule" onclick="navTo('schedule')">
+        <span class="nav-icon">📅</span> Meeting Scheduler
+      </div>
+      <div class="nav-item" data-section="cover" onclick="navTo('cover')">
+        <span class="nav-icon">🔄</span> Cover Requests
+        <span class="nav-badge" id="cover-nav-badge">1</span>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-chip">YD</div>
+      <div class="user-info">
+        <div class="user-name">You (Dev)</div>
+        <div class="user-role">Software Engineer</div>
+      </div>
+      <div class="online-dot" title="Active"></div>
+    </div>
+  </nav>
+
+  <!-- ══════════ MAIN ══════════ -->
+  <div id="main">
+
+    <!-- Top bar -->
+    <div id="top-bar">
+      <span id="tb-title" class="topbar-title">Team Status</span>
+      <span id="tb-sub"   class="topbar-sub">— Real-time view of your SE team</span>
+      <span class="sprint-chip">Thu, May 8 · Sprint 12</span>
+    </div>
+
+    <!-- Content -->
+    <div id="content">
+
+      <!-- ━━━━━━ TEAM STATUS ━━━━━━ -->
+      <section id="section-team" class="section active">
+        <div class="page-header">
+          <div class="page-title">Team Status</div>
+          <div class="page-desc">Who's in, who's out, and what everyone's working on right now</div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-value" style="color:#10B981;">4</div>
+            <div class="stat-label">Active</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" style="color:#F59E0B;">1</div>
+            <div class="stat-label">Away</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" style="color:#94A3B8;">1</div>
+            <div class="stat-label">Offline</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">6</div>
+            <div class="stat-label">Total Members</div>
+          </div>
+        </div>
+
+        <div class="members-grid" id="team-grid"></div>
+      </section>
+
+      <!-- ━━━━━━ STANDUPS ━━━━━━ -->
+      <section id="section-standups" class="section">
+        <div class="page-header">
+          <div class="page-hrow">
+            <div>
+              <div class="page-title">Daily Standups</div>
+              <div class="page-desc">Async standup feed — publicly visible to the whole team</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit form -->
+        <div class="standup-form-card">
+          <div class="standup-form-title">✏️ Post Your Standup</div>
+          <form id="standup-form">
+            <div class="form-group">
+              <label class="form-label">What did you work on yesterday?</label>
+              <textarea name="yesterday" class="form-input" rows="2" placeholder="Summarize your work from yesterday…" required></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">What are you working on today?</label>
+              <textarea name="today" class="form-input" rows="2" placeholder="What's on your plate today…" required></textarea>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">
+                Any blockers?
+                <span style="font-weight:400;color:#94A3B8;"> — optional, leave blank if none</span>
+              </label>
+              <input name="blockers" type="text" class="form-input" placeholder="Describe your blocker, or leave blank">
+            </div>
+            <div style="margin-top:14px;display:flex;justify-content:flex-end;">
+              <button type="submit" class="btn btn-primary">Post Standup →</button>
+            </div>
+          </form>
+        </div>
+
+        <div id="standup-feed" class="standup-feed"></div>
+      </section>
+
+      <!-- ━━━━━━ MEETING SCHEDULER ━━━━━━ -->
+      <section id="section-schedule" class="section">
+        <div class="page-header">
+          <div class="page-title">Meeting Scheduler</div>
+          <div class="page-desc">Click time slots to mark when you're free. The aggregate shows the best meeting windows for the team.</div>
+        </div>
+
+        <div class="schedule-wrapper">
+          <!-- My availability -->
+          <div>
+            <div class="schedule-title-row">
+              <div>
+                <div class="font-bold">My Availability</div>
+                <div class="text-sm text-muted" style="margin-top:2px;">Click to toggle available slots</div>
+              </div>
+              <button class="btn btn-sm btn-secondary" onclick="clearMyAvail()">Clear All</button>
+            </div>
+            <div class="time-grid">
+              <div class="g-header">
+                <div class="g-hcell"></div>
+                <div class="g-hcell">Mon</div>
+                <div class="g-hcell">Tue</div>
+                <div class="g-hcell">Wed</div>
+                <div class="g-hcell">Thu</div>
+                <div class="g-hcell">Fri</div>
+              </div>
+              <div id="my-grid-body"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+              <div style="width:13px;height:13px;background:#DCFCE7;border:1px solid #BBF7D0;border-radius:3px;"></div>
+              <span class="text-xs text-muted">Available</span>
+              <div style="width:13px;height:13px;background:#fff;border:1px solid #E2E8F0;border-radius:3px;margin-left:10px;"></div>
+              <span class="text-xs text-muted">Unavailable</span>
+            </div>
+          </div>
+
+          <!-- Team aggregate heatmap -->
+          <div>
+            <div class="schedule-title-row">
+              <div>
+                <div class="font-bold">Team Aggregate</div>
+                <div class="text-sm text-muted" style="margin-top:2px;">Darker = more team members available</div>
+              </div>
+            </div>
+            <div class="time-grid">
+              <div class="g-header">
+                <div class="g-hcell"></div>
+                <div class="g-hcell">Mon</div>
+                <div class="g-hcell">Tue</div>
+                <div class="g-hcell">Wed</div>
+                <div class="g-hcell">Thu</div>
+                <div class="g-hcell">Fri</div>
+              </div>
+              <div id="team-grid-body"></div>
+            </div>
+            <div class="legend-row">
+              <span>Fewer</span>
+              <div class="leg-sw" style="background:#fff;border:1px solid #E2E8F0;"></div>
+              <div class="leg-sw" style="background:#F0FDF4;"></div>
+              <div class="leg-sw" style="background:#DCFCE7;"></div>
+              <div class="leg-sw" style="background:#86EFAC;"></div>
+              <div class="leg-sw" style="background:#4ADE80;"></div>
+              <div class="leg-sw" style="background:#16A34A;"></div>
+              <span>More</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ━━━━━━ BLOCKERS ━━━━━━ -->
+      <section id="section-blockers" class="section">
+        <div class="page-header">
+          <div class="page-hrow">
+            <div>
+              <div class="page-title">
+                Blockers <span id="active-blocker-count" style="font-size:16px;font-weight:500;color:#64748B;"></span>
+              </div>
+              <div class="page-desc">Issues hindering team productivity — resolve them to unblock progress</div>
+            </div>
+            <button class="btn btn-primary" onclick="openBlockerModal()">+ Add Blocker</button>
+          </div>
+        </div>
+
+        <div id="blocker-list" class="blocker-list"></div>
+      </section>
+
+      <!-- ━━━━━━ CURRENT WORK ━━━━━━ -->
+      <section id="section-work" class="section">
+        <div class="page-header">
+          <div class="page-title">Current Work</div>
+          <div class="page-desc">Sprint 12 task assignments and completion status for the team</div>
+        </div>
+
+        <div class="work-wrap">
+          <table class="work-table">
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Task</th>
+                <th>Status</th>
+                <th>Progress</th>
+                <th>Sprint</th>
+              </tr>
+            </thead>
+            <tbody id="work-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ━━━━━━ COVER REQUESTS ━━━━━━ -->
+      <section id="section-cover" class="section">
+        <div class="page-header">
+          <div class="page-hrow">
+            <div>
+              <div class="page-title">Cover Requests</div>
+              <div class="page-desc">
+                Team members who need coverage while they're out —
+                <span id="open-cover-count" style="font-weight:700;"></span> open request(s)
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="openCoverModal()">+ Request Cover</button>
+          </div>
+        </div>
+
+        <div id="cover-grid" class="cover-grid"></div>
+      </section>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ══════════ MODAL: ADD BLOCKER ══════════ -->
+<div id="blocker-modal" class="modal-overlay" onclick="if(event.target===this)closeBlockerModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🚧 Add Blocker</div>
+      <button class="modal-close" onclick="closeBlockerModal()">×</button>
+    </div>
+    <form id="blocker-form" onsubmit="submitBlocker(event)">
+      <div class="form-group">
+        <label class="form-label">Affected Team Member</label>
+        <select name="member" class="form-input"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Blocker Description</label>
+        <textarea name="description" class="form-input" rows="3"
+          placeholder="Describe the issue in detail — what's blocked, what's needed…" required></textarea>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">Severity</label>
+        <select name="severity" class="form-input">
+          <option value="low">Low — minor inconvenience</option>
+          <option value="medium" selected>Medium — slowing progress</option>
+          <option value="high">High — blocking significant work</option>
+          <option value="critical">Critical — fully stopped, needs immediate action</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeBlockerModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Blocker</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: REQUEST COVER ══════════ -->
+<div id="cover-modal" class="modal-overlay" onclick="if(event.target===this)closeCoverModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🔄 Request Coverage</div>
+      <button class="modal-close" onclick="closeCoverModal()">×</button>
+    </div>
+    <form id="cover-form" onsubmit="submitCover(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Start Date</label>
+          <input name="startDate" type="date" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">End Date</label>
+          <input name="endDate" type="date" class="form-input" required>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">Reason / Coverage Notes</label>
+        <textarea name="reason" class="form-input" rows="3"
+          placeholder="What's your reason for being out? What needs coverage (oncall, reviews, etc.)?" required></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeCoverModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Submit Request</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════ TOAST ══════════ -->
+<div id="toast" class="toast">
+  <span class="t-icon">✓</span>
+  <span class="t-msg"></span>
+</div>
+
+<script src="josh-prototype.js"></script>
+</body>
+</html>

@@ -1,0 +1,2203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SE SitRep — Team Status Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f4f1ea;
+    --paper-2: #ebe6db;
+    --ink: #1a1814;
+    --ink-soft: #4a463e;
+    --rule: #2a261f;
+    --accent: #d94a26;
+    --accent-soft: #f3d9cf;
+    --ok: #3a6b3a;
+    --ok-soft: #d4e5d0;
+    --warn: #c08a1e;
+    --warn-soft: #f0e3c0;
+    --agent: #4a3a8a;
+    --agent-soft: #e0dbf0;
+    --shadow: rgba(26, 24, 20, 0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.5;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 20% 0%, rgba(217, 74, 38, 0.04) 0%, transparent 50%),
+      radial-gradient(circle at 80% 100%, rgba(58, 107, 58, 0.04) 0%, transparent 50%);
+  }
+
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .display { font-family: 'Fraunces', serif; font-style: italic; }
+
+  /* MASTHEAD */
+  .masthead {
+    border-bottom: 2px solid var(--rule);
+    padding: 24px 40px 20px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: baseline; gap: 16px; }
+  .brand-mark {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 800;
+    font-size: 38px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .brand-mark::first-letter { color: var(--accent); }
+  .brand-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-soft);
+    border-left: 1px solid var(--rule);
+    padding-left: 16px;
+  }
+  .masthead-meta {
+    display: flex;
+    gap: 28px;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+  }
+  .pulse {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--ok);
+    margin-right: 8px;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* NAV */
+  nav.tabs {
+    border-bottom: 1px solid var(--rule);
+    padding: 0 40px;
+    display: flex;
+    gap: 0;
+    background: var(--paper-2);
+    overflow-x: auto;
+  }
+  .tab {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    padding: 14px 20px;
+    background: none;
+    border: none;
+    border-right: 1px solid var(--rule);
+    cursor: pointer;
+    color: var(--ink-soft);
+    transition: all 0.2s;
+    position: relative;
+    white-space: nowrap;
+  }
+  .tab:first-child { border-left: 1px solid var(--rule); }
+  .tab:hover { color: var(--ink); background: var(--paper); }
+  .tab.active {
+    color: var(--ink);
+    background: var(--paper);
+    font-weight: 700;
+  }
+  .tab.active::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -1px;
+    height: 2px;
+    background: var(--accent);
+  }
+
+  /* MAIN */
+  main {
+    padding: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .view { display: none; animation: fadeIn 0.4s ease; }
+  .view.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* SECTION HEADERS */
+  .section-head {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 20px;
+    align-items: baseline;
+    margin-bottom: 32px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 32px;
+    letter-spacing: -0.01em;
+  }
+  .section-title em {
+    font-style: italic;
+    font-weight: 400;
+  }
+  .section-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-soft);
+  }
+
+  /* DIGEST GRID */
+  .digest-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 32px;
+  }
+  @media (max-width: 900px) { .digest-grid { grid-template-columns: 1fr; } }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border: 1px solid var(--rule);
+    margin-bottom: 32px;
+    background: var(--paper);
+  }
+  .stat {
+    padding: 20px 18px;
+    border-right: 1px solid var(--rule);
+  }
+  .stat:last-child { border-right: none; }
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-family: 'Fraunces', serif;
+    font-size: 36px;
+    font-weight: 400;
+    line-height: 1;
+  }
+  .stat-value.alert { color: var(--accent); }
+  .stat-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 24px;
+    margin-bottom: 16px;
+    position: relative;
+    transition: transform 0.2s;
+  }
+  .card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px var(--shadow); }
+  .card.blocker {
+    border-left: 4px solid var(--accent);
+    background: var(--accent-soft);
+  }
+  .card.no-checkin {
+    background: repeating-linear-gradient(
+      45deg,
+      var(--paper),
+      var(--paper) 10px,
+      var(--paper-2) 10px,
+      var(--paper-2) 20px
+    );
+    opacity: 0.7;
+  }
+  .card.agent {
+    border-left: 4px solid var(--agent);
+  }
+
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+    gap: 16px;
+  }
+  .person {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--paper);
+    display: grid;
+    place-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .avatar.a-1 { background: #2c5e3f; }
+  .avatar.a-2 { background: #b85c2e; }
+  .avatar.a-3 { background: #4a3a8a; }
+  .avatar.a-4 { background: #8a2e4a; }
+  .avatar.a-5 { background: #2e6a8a; }
+  .avatar.a-bot { background: var(--agent); }
+
+  .person-info .name {
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .person-info .role {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .timestamp {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .checkin-section { margin: 12px 0; }
+  .checkin-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+  .checkin-text {
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.55;
+  }
+
+  .blocker-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent);
+    color: var(--paper);
+    padding: 3px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+  }
+  .blocker-tag::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--paper);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+
+  /* GITHUB AUTO-ENRICHMENT badge */
+  .gh-enrich {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: var(--paper-2);
+    border-left: 2px solid var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+  .gh-enrich-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-weight: 700;
+    color: var(--ink);
+    text-transform: uppercase;
+    font-size: 9px;
+    letter-spacing: 0.16em;
+  }
+  .gh-enrich-head svg { width: 12px; height: 12px; }
+  .gh-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 0;
+  }
+  .gh-item code {
+    background: var(--paper);
+    padding: 1px 6px;
+    border: 1px solid var(--rule);
+    font-size: 10px;
+  }
+
+  /* MOOD */
+  .mood-display { display: flex; align-items: center; gap: 8px; }
+  .mood-emoji { font-size: 24px; filter: grayscale(0.2); }
+  .mood-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+  }
+
+  /* SIDE PANEL */
+  .side-panel h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .panel-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+
+  .mood-bar { display: flex; flex-direction: column; gap: 10px; }
+  .mood-row {
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    align-items: center;
+    gap: 12px;
+  }
+  .mood-row .emoji { font-size: 18px; }
+  .mood-row .bar {
+    height: 8px;
+    background: var(--paper-2);
+    border: 1px solid var(--rule);
+    position: relative;
+    overflow: hidden;
+  }
+  .mood-row .fill { height: 100%; background: var(--ink); }
+  .mood-row .fill.bad { background: var(--accent); }
+  .mood-row .count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  /* CHECK-IN FORM */
+  .form-shell {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 32px;
+  }
+  @media (max-width: 900px) { .form-shell { grid-template-columns: 1fr; } }
+
+  .form-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 32px;
+  }
+  .form-group { margin-bottom: 24px; }
+  .form-group label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .form-group label .num {
+    color: var(--accent);
+    margin-right: 8px;
+  }
+  .form-group textarea, .form-group input[type="text"] {
+    width: 100%;
+    background: var(--paper-2);
+    border: 1px solid var(--rule);
+    padding: 12px 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    resize: vertical;
+    transition: all 0.2s;
+  }
+  .form-group textarea:focus, .form-group input:focus {
+    outline: none;
+    background: var(--paper);
+    border-color: var(--accent);
+  }
+  .form-group textarea { min-height: 80px; }
+
+  .blocker-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    background: var(--paper-2);
+    border: 1px solid var(--rule);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .blocker-toggle:hover { background: var(--paper); }
+  .blocker-toggle.active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+  .toggle-box {
+    width: 18px; height: 18px;
+    border: 1.5px solid var(--rule);
+    background: var(--paper);
+    display: grid;
+    place-items: center;
+  }
+  .blocker-toggle.active .toggle-box {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--paper);
+  }
+
+  .mood-picker {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+  .mood-btn {
+    aspect-ratio: 1;
+    background: var(--paper-2);
+    border: 1px solid var(--rule);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .mood-btn:hover { transform: translateY(-2px); background: var(--paper); }
+  .mood-btn.selected {
+    background: var(--ink);
+    border-color: var(--ink);
+    transform: translateY(-2px);
+  }
+  .mood-btn.selected::after {
+    content: attr(data-label);
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+
+  .submit-btn {
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 16px 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    font-weight: 700;
+  }
+  .submit-btn:hover { background: var(--accent); }
+
+  .form-aside h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    margin-bottom: 12px;
+  }
+  .tip-card {
+    border-left: 2px solid var(--accent);
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    background: var(--paper);
+  }
+  .tip-card p {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+  .tip-card p strong { color: var(--ink); }
+
+  /* AVAILABILITY GRID */
+  .avail-shell {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 24px;
+    overflow-x: auto;
+  }
+  .avail-grid {
+    display: grid;
+    grid-template-columns: 140px repeat(5, 1fr);
+    gap: 0;
+    min-width: 700px;
+  }
+  .avail-cell {
+    border-right: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 8px;
+    min-height: 36px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    position: relative;
+  }
+  .avail-cell.head {
+    background: var(--paper-2);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 10px;
+    border-top: 1px solid var(--rule);
+  }
+  .avail-cell.head:first-child { border-left: 1px solid var(--rule); }
+  .avail-cell:not(.head):first-child {
+    background: var(--paper-2);
+    text-align: left;
+    border-left: 1px solid var(--rule);
+    font-weight: 600;
+  }
+  .avail-cell.free { background: var(--ok-soft); }
+  .avail-cell.busy { background: var(--accent-soft); color: var(--accent); }
+  .avail-cell.tentative { background: var(--warn-soft); }
+  .avail-cell.consensus { background: var(--ink); color: var(--paper); font-weight: 700; }
+  .avail-cell.consensus::after {
+    content: '★';
+    position: absolute;
+    top: 2px; right: 4px;
+    font-size: 9px;
+    color: var(--accent);
+  }
+
+  .avail-legend {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-swatch {
+    width: 14px; height: 14px;
+    border: 1px solid var(--rule);
+  }
+
+  /* FILTER BAR */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .filter-chip {
+    background: transparent;
+    border: 1px solid var(--rule);
+    padding: 8px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--ink);
+  }
+  .filter-chip:hover { background: var(--paper); }
+  .filter-chip.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  /* GITHUB ACTIVITY VIEW */
+  .gh-shell { display: grid; grid-template-columns: 1fr 320px; gap: 32px; }
+  @media (max-width: 900px) { .gh-shell { grid-template-columns: 1fr; } }
+
+  .repo-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .repo-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+  }
+  .repo-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .repo-name .org { color: var(--ink-soft); font-weight: 400; }
+  .repo-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    padding: 4px 10px;
+    background: var(--ok-soft);
+    color: var(--ok);
+    border: 1px solid var(--ok);
+  }
+
+  .gh-event {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px dashed rgba(0,0,0,0.1);
+    align-items: center;
+  }
+  .gh-event:last-child { border-bottom: none; }
+  .gh-icon {
+    width: 24px; height: 24px;
+    background: var(--ink);
+    color: var(--paper);
+    display: grid;
+    place-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .gh-icon.pr { background: var(--ok); }
+  .gh-icon.commit { background: var(--ink); }
+  .gh-icon.issue { background: var(--accent); }
+  .gh-icon.merge { background: var(--agent); }
+  .gh-event .desc { font-size: 13px; }
+  .gh-event .desc code {
+    background: var(--paper-2);
+    padding: 1px 6px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    border: 1px solid var(--rule);
+  }
+  .gh-event .desc strong { font-weight: 600; }
+  .gh-event .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    text-align: right;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* CONNECTOR CARDS */
+  .connector {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    margin-bottom: 10px;
+  }
+  .connector-info { display: flex; align-items: center; gap: 12px; }
+  .connector-icon {
+    width: 32px; height: 32px;
+    background: var(--ink);
+    color: var(--paper);
+    display: grid;
+    place-items: center;
+    border-radius: 4px;
+  }
+  .connector-name { font-weight: 600; font-size: 13px; }
+  .connector-detail {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .connector-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    padding: 4px 10px;
+    border: 1px solid;
+  }
+  .connector-status.live {
+    color: var(--ok);
+    border-color: var(--ok);
+    background: var(--ok-soft);
+  }
+  .connector-status.offline {
+    color: var(--ink-soft);
+    border-color: var(--rule);
+  }
+
+  .contrib-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 60px;
+    margin: 14px 0;
+  }
+  .contrib-bar {
+    flex: 1;
+    background: var(--ink);
+    min-height: 4px;
+    transition: opacity 0.2s;
+  }
+  .contrib-bar:hover { opacity: 0.7; }
+  .contrib-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* PROJECT PLANNING — KANBAN */
+  .kanban {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  @media (max-width: 1100px) { .kanban { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .kanban { grid-template-columns: 1fr; } }
+
+  .column {
+    background: var(--paper-2);
+    border: 1px solid var(--rule);
+    padding: 14px;
+    min-height: 400px;
+  }
+  .column-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 2px solid var(--rule);
+  }
+  .column-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-weight: 700;
+  }
+  .column-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 2px 8px;
+  }
+
+  .ticket {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 12px;
+    margin-bottom: 10px;
+    cursor: grab;
+    transition: all 0.2s;
+  }
+  .ticket:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px var(--shadow);
+  }
+  .ticket-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+  .ticket-title {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+  .ticket-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ticket-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+  .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 2px 6px;
+    border: 1px solid var(--rule);
+    background: var(--paper-2);
+  }
+  .tag.priority-high {
+    background: var(--accent);
+    color: var(--paper);
+    border-color: var(--accent);
+  }
+  .tag.priority-med {
+    background: var(--warn-soft);
+    border-color: var(--warn);
+    color: var(--warn);
+  }
+  .tag.feature { background: #d0e0f0; border-color: #2e6a8a; color: #2e6a8a; }
+  .tag.design { background: var(--agent-soft); border-color: var(--agent); color: var(--agent); }
+  .tag.testing { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+
+  .ticket-avatar {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 9px;
+    color: var(--paper);
+  }
+
+  /* SPRINT BAR */
+  .sprint-bar {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 24px;
+    align-items: center;
+  }
+  @media (max-width: 800px) {
+    .sprint-bar { grid-template-columns: 1fr; gap: 14px; }
+  }
+  .sprint-info .sprint-name {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 22px;
+    font-weight: 400;
+  }
+  .sprint-info .sprint-dates {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+  .progress-track {
+    width: 200px;
+    height: 6px;
+    background: var(--paper-2);
+    border: 1px solid var(--rule);
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--ink);
+  }
+  .progress-num {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    line-height: 1;
+  }
+  .progress-num span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  /* USER STORIES */
+  .stories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .story-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-top: 3px solid var(--ink);
+    padding: 20px;
+    position: relative;
+  }
+  .story-card .story-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    margin-bottom: 10px;
+  }
+  .story-card .story-text {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    line-height: 1.45;
+    margin-bottom: 14px;
+  }
+  .story-card .story-text em { font-style: italic; }
+  .story-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid var(--paper-2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+  }
+
+  /* ROADMAP */
+  .roadmap {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 24px;
+    margin-top: 24px;
+    overflow-x: auto;
+  }
+  .roadmap-head {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .roadmap-grid {
+    display: grid;
+    grid-template-columns: 100px repeat(6, 1fr);
+    gap: 4px;
+    min-width: 700px;
+  }
+  .roadmap-cell {
+    padding: 6px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    border-bottom: 1px solid var(--paper-2);
+  }
+  .roadmap-cell.head {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    font-weight: 700;
+    text-align: center;
+    border-bottom: 1px solid var(--rule);
+  }
+  .roadmap-cell.lane {
+    background: var(--paper-2);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 10px;
+  }
+  .roadmap-bar {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 4px 8px;
+    font-size: 10px;
+    text-align: center;
+    margin: 1px 0;
+  }
+  .roadmap-bar.feat { background: #2e6a8a; }
+  .roadmap-bar.design { background: var(--agent); }
+  .roadmap-bar.test { background: var(--ok); }
+  .roadmap-bar.now { background: var(--accent); }
+
+  /* FOOTER */
+  footer {
+    border-top: 2px solid var(--rule);
+    padding: 24px 40px;
+    margin-top: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .footer-mark::before {
+    content: '◆';
+    color: var(--accent);
+    margin-right: 8px;
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="brand">
+    <div class="brand-mark">SitRep</div>
+    <div class="brand-tag">Vol. 01 / Issue 042<br>Team Status Report</div>
+  </div>
+  <div class="masthead-meta">
+    <div><span class="pulse"></span>5 of 6 reporting</div>
+    <div id="current-date">Friday · May 8, 2026</div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-view="digest">◆ Daily Digest</button>
+  <button class="tab" data-view="checkin">+ Check-in</button>
+  <button class="tab" data-view="feed">≡ Team Feed</button>
+  <button class="tab" data-view="blockers">! Blockers <span style="color: var(--accent); margin-left: 4px;">2</span></button>
+  <button class="tab" data-view="availability">⌖ Availability</button>
+  <button class="tab" data-view="github">⎇ GitHub Activity</button>
+  <button class="tab" data-view="planning">▦ Project Planning</button>
+</nav>
+
+<main>
+
+  <!-- ========================================== -->
+  <!-- 1. DAILY DIGEST                             -->
+  <!-- ========================================== -->
+  <section class="view active" id="view-digest">
+    <div class="section-head">
+      <div class="section-num">§ 01</div>
+      <h2 class="section-title">The day in <em>brief</em></h2>
+      <div class="section-meta">Auto-compiled · 09:14 PT</div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat">
+        <div class="stat-label">Checked in</div>
+        <div class="stat-value">5<span style="font-size: 18px; color: var(--ink-soft);">/6</span></div>
+        <div class="stat-sub">Maya hasn't reported</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Active blockers</div>
+        <div class="stat-value alert">2</div>
+        <div class="stat-sub">+1 since yesterday</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Team mood</div>
+        <div class="stat-value">3.6</div>
+        <div class="stat-sub">↓ from 4.1 (Tue)</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Streak</div>
+        <div class="stat-value">14<span style="font-size: 18px; color: var(--ink-soft);">d</span></div>
+        <div class="stat-sub">Best this quarter</div>
+      </div>
+    </div>
+
+    <div class="digest-grid">
+      <div>
+        <h3 style="font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--ink-soft); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--rule);">Today's Check-ins</h3>
+
+        <div class="card blocker">
+          <div class="card-head">
+            <div class="person">
+              <div class="avatar a-1">SP</div>
+              <div class="person-info">
+                <div class="name">Srinivasa P.</div>
+                <div class="role">Backend · Reporting</div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+              <span class="blocker-tag">Blocker</span>
+              <span class="timestamp">09:02</span>
+            </div>
+          </div>
+          <div class="checkin-section">
+            <div class="checkin-label">Yesterday</div>
+            <div class="checkin-text">Wired up the check-in submission endpoint and got first end-to-end pass through the digest pipeline.</div>
+          </div>
+          <div class="checkin-section">
+            <div class="checkin-label">Today</div>
+            <div class="checkin-text">Trying to reproduce the digest timezone bug, then moving on to blocker alert push.</div>
+          </div>
+          <div class="checkin-section">
+            <div class="checkin-label">Blocker</div>
+            <div class="checkin-text" style="color: var(--accent); font-weight: 500;">Need design decision on whether AI agent check-ins surface in the same feed or get a dedicated lane.</div>
+          </div>
+
+          <div class="gh-enrich">
+            <div class="gh-enrich-head">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 0 0-2.5 15.6c.4.1.5-.2.5-.4v-1.5c-2.2.5-2.7-1-2.7-1-.4-.9-.9-1.2-.9-1.2-.7-.5.1-.5.1-.5.8.1 1.2.8 1.2.8.7 1.2 1.9.9 2.4.7.1-.5.3-.9.5-1.1-1.8-.2-3.6-.9-3.6-3.9 0-.9.3-1.6.8-2.1-.1-.2-.4-1 .1-2.1 0 0 .7-.2 2.2.8a7.5 7.5 0 0 1 4 0c1.5-1 2.2-.8 2.2-.8.4 1.1.2 1.9.1 2.1.5.5.8 1.2.8 2.1 0 3-1.8 3.6-3.6 3.8.3.3.5.7.5 1.5v2.2c0 .2.1.5.5.4A8 8 0 0 0 8 0z"/></svg>
+              Auto-enriched from GitHub
+            </div>
+            <div class="gh-item">→ Pushed 4 commits to <code>feat/checkin-api</code></div>
+            <div class="gh-item">→ Opened PR <code>#47 · Add validation to check-in payload</code></div>
+            <div class="gh-item">→ Closed issue <code>#42 · Digest aggregation logic</code></div>
+          </div>
+
+          <div class="card-head" style="margin-top: 14px; margin-bottom: 0; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 14px;">
+            <div class="mood-display">
+              <span class="mood-emoji">😐</span>
+              <span class="mood-label">Mood · 3 / 5 — "Stuck but okay"</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div class="person">
+              <div class="avatar a-2">JR</div>
+              <div class="person-info">
+                <div class="name">Jordan R.</div>
+                <div class="role">Frontend · Design</div>
+              </div>
+            </div>
+            <span class="timestamp">08:47</span>
+          </div>
+          <div class="checkin-section">
+            <div class="checkin-label">Yesterday</div>
+            <div class="checkin-text">Finished the wireframes for the availability heatmap. Got sign-off from the team in standup.</div>
+          </div>
+          <div class="checkin-section">
+            <div class="checkin-label">Today</div>
+            <div class="checkin-text">Building out the digest layout and starting on the mood picker component.</div>
+          </div>
+
+          <div class="gh-enrich">
+            <div class="gh-enrich-head">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 0 0-2.5 15.6c.4.1.5-.2.5-.4v-1.5c-2.2.5-2.7-1-2.7-1-.4-.9-.9-1.2-.9-1.2-.7-.5.1-.5.1-.5.8.1 1.2.8 1.2.8.7 1.2 1.9.9 2.4.7.1-.5.3-.9.5-1.1-1.8-.2-3.6-.9-3.6-3.9 0-.9.3-1.6.8-2.1-.1-.2-.4-1 .1-2.1 0 0 .7-.2 2.2.8a7.5 7.5 0 0 1 4 0c1.5-1 2.2-.8 2.2-.8.4 1.1.2 1.9.1 2.1.5.5.8 1.2.8 2.1 0 3-1.8 3.6-3.6 3.8.3.3.5.7.5 1.5v2.2c0 .2.1.5.5.4A8 8 0 0 0 8 0z"/></svg>
+              Auto-enriched from GitHub
+            </div>
+            <div class="gh-item">→ Merged PR <code>#45 · Wireframe component library</code></div>
+            <div class="gh-item">→ 11 commits this week (most on team)</div>
+          </div>
+
+          <div class="card-head" style="margin-top: 14px; margin-bottom: 0; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 14px;">
+            <div class="mood-display">
+              <span class="mood-emoji">😄</span>
+              <span class="mood-label">Mood · 5 / 5 — "Flow state"</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card blocker">
+          <div class="card-head">
+            <div class="person">
+              <div class="avatar a-3">AK</div>
+              <div class="person-info">
+                <div class="name">Aisha K.</div>
+                <div class="role">DevOps · CI/CD</div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+              <span class="blocker-tag">Blocker</span>
+              <span class="timestamp">08:31</span>
+            </div>
+          </div>
+          <div class="checkin-section">
+            <div class="checkin-label">Yesterday</div>
+            <div class="checkin-text">Got the GitHub Actions pipeline mostly green. Linting and unit tests run on every PR now.</div>
+          </div>
+          <div class="checkin-section">
+            <div class="checkin-label">Today</div>
+            <div class="checkin-text">Setting up Cloudflare Pages deployment and figuring out branch previews.</div>
+          </div>
+          <div class="checkin-section">
+            <div class="checkin-label">Blocker</div>
+            <div class="checkin-text" style="color: var(--accent); font-weight: 500;">Cloudflare account access — waiting on TA to add me to the org.</div>
+          </div>
+          <div class="card-head" style="margin-top: 14px; margin-bottom: 0; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 14px;">
+            <div class="mood-display">
+              <span class="mood-emoji">🙂</span>
+              <span class="mood-label">Mood · 4 / 5</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card no-checkin">
+          <div class="card-head">
+            <div class="person">
+              <div class="avatar a-4">MT</div>
+              <div class="person-info">
+                <div class="name">Maya T.</div>
+                <div class="role">Backend · Auth</div>
+              </div>
+            </div>
+            <span class="timestamp" style="color: var(--accent);">⚠ NOT YET TODAY</span>
+          </div>
+          <div class="checkin-section">
+            <div class="checkin-text" style="font-style: italic; color: var(--ink-soft);">Last seen 18 hours ago. Nudge sent at 09:00.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="side-panel">
+        <h3>Pulse — last 5 days</h3>
+        <div class="panel-card">
+          <div class="mood-bar">
+            <div class="mood-row"><span class="emoji">😄</span><div class="bar"><div class="fill" style="width: 32%"></div></div><span class="count">7</span></div>
+            <div class="mood-row"><span class="emoji">🙂</span><div class="bar"><div class="fill" style="width: 50%"></div></div><span class="count">11</span></div>
+            <div class="mood-row"><span class="emoji">😐</span><div class="bar"><div class="fill" style="width: 23%"></div></div><span class="count">5</span></div>
+            <div class="mood-row"><span class="emoji">😟</span><div class="bar"><div class="fill bad" style="width: 14%"></div></div><span class="count">3</span></div>
+            <div class="mood-row"><span class="emoji">😩</span><div class="bar"><div class="fill bad" style="width: 5%"></div></div><span class="count">1</span></div>
+          </div>
+          <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 12px; color: var(--ink-soft); line-height: 1.5;">
+            Mood dipped Wednesday — coincides with the blocker spike on the auth refactor. Recovered Thursday.
+          </div>
+        </div>
+
+        <h3>AI Agents on the team</h3>
+        <div class="panel-card" style="border-left: 3px solid var(--agent);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <strong style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">@codex-reviewer</strong>
+            <span class="timestamp">active</span>
+          </div>
+          <div style="font-size: 13px; color: var(--ink-soft);">3 PRs reviewed today · 0 blockers · ran 47 min</div>
+        </div>
+        <div class="panel-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <strong style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">@docs-bot</strong>
+            <span class="timestamp">idle</span>
+          </div>
+          <div style="font-size: 13px; color: var(--ink-soft);">Last run yesterday 14:22 · drafted 2 ADRs</div>
+        </div>
+
+        <h3>Coming up</h3>
+        <div class="panel-card">
+          <div style="font-size: 13px; line-height: 1.7;">
+            <div style="display: flex; justify-content: space-between;"><span><strong>Standup</strong></span><span class="mono" style="color: var(--ink-soft);">Mon 10:00</span></div>
+            <div style="display: flex; justify-content: space-between;"><span><strong>Sprint review</strong></span><span class="mono" style="color: var(--ink-soft);">Fri 15:30</span></div>
+            <div style="display: flex; justify-content: space-between;"><span><strong>TA meeting</strong></span><span class="mono" style="color: var(--ink-soft);">Wed 11:00</span></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 2. CHECK-IN                                  -->
+  <!-- ========================================== -->
+  <section class="view" id="view-checkin">
+    <div class="section-head">
+      <div class="section-num">§ 02</div>
+      <h2 class="section-title">Your <em>check-in</em> for today</h2>
+      <div class="section-meta">Takes ≈ 90 seconds</div>
+    </div>
+
+    <div class="form-shell">
+      <div class="form-card">
+        <div class="form-group">
+          <label><span class="num">01</span>What did you do yesterday?</label>
+          <textarea placeholder="Yesterday I shipped... / wrapped up... / spent time on..."></textarea>
+          <div style="margin-top: 8px; padding: 10px 12px; background: var(--paper-2); border-left: 2px solid var(--ink); font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-soft); line-height: 1.5;">
+            <strong style="color: var(--ink);">↳ Suggested from your GitHub:</strong><br>
+            • Merged PR #47 — Add validation to check-in payload<br>
+            • 4 commits on <code style="background: var(--paper); padding: 1px 5px; border: 1px solid var(--rule);">feat/checkin-api</code>
+            <button class="filter-chip" style="margin-top: 8px;">+ Add to check-in</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label><span class="num">02</span>What are you working on today?</label>
+          <textarea placeholder="Today I'm focusing on..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label><span class="num">03</span>Anything in your way?</label>
+          <div class="blocker-toggle" id="blocker-toggle">
+            <div class="toggle-box" id="toggle-box">
+              <span style="font-size: 11px;" id="toggle-check"></span>
+            </div>
+            <div>
+              <strong style="font-size: 13px;">I'm blocked on something</strong>
+              <div style="font-size: 11px; color: var(--ink-soft); margin-top: 2px;">This will alert the team and surface in the blocker feed.</div>
+            </div>
+          </div>
+          <textarea id="blocker-detail" style="margin-top: 12px; display: none;" placeholder="Describe the blocker — who or what could unblock you?"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label><span class="num">04</span>How are you feeling?</label>
+          <div class="mood-picker">
+            <button class="mood-btn" data-mood="1" data-label="Rough day">😩</button>
+            <button class="mood-btn" data-mood="2" data-label="Struggling">😟</button>
+            <button class="mood-btn selected" data-mood="3" data-label="Steady">😐</button>
+            <button class="mood-btn" data-mood="4" data-label="Going well">🙂</button>
+            <button class="mood-btn" data-mood="5" data-label="Flow state">😄</button>
+          </div>
+          <div style="font-size: 11px; color: var(--ink-soft); margin-top: 28px;">Only mood averages are shared with the team. Individual ratings stay private.</div>
+        </div>
+
+        <button class="submit-btn">Submit check-in →</button>
+      </div>
+
+      <aside class="form-aside">
+        <h4>Why we ask</h4>
+        <div class="tip-card">
+          <p><strong>Yesterday & today</strong> give the team async context so standup isn't a status round-robin.</p>
+        </div>
+        <div class="tip-card">
+          <p><strong>Blockers</strong> are surfaced immediately to anyone who can help — no waiting for the next meeting.</p>
+        </div>
+        <div class="tip-card">
+          <p><strong>Mood</strong> isn't performative. If you've had a rough day, log it. We watch trends, not single moments.</p>
+        </div>
+
+        <h4 style="margin-top: 28px;">Last week's streak</h4>
+        <div class="panel-card" style="background: var(--paper);">
+          <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+            <div style="flex: 1; height: 28px; background: var(--ink);"></div>
+            <div style="flex: 1; height: 28px; background: var(--ink);"></div>
+            <div style="flex: 1; height: 28px; background: var(--ink);"></div>
+            <div style="flex: 1; height: 28px; background: var(--ink);"></div>
+            <div style="flex: 1; height: 28px; background: var(--paper-2); border: 1px solid var(--rule);"></div>
+          </div>
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-soft); display: flex; justify-content: space-between;">
+            <span>M T W T</span><span>F</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 3. FEED                                     -->
+  <!-- ========================================== -->
+  <section class="view" id="view-feed">
+    <div class="section-head">
+      <div class="section-num">§ 03</div>
+      <h2 class="section-title">Team <em>feed</em></h2>
+      <div class="section-meta">Live · Updated 2m ago</div>
+    </div>
+
+    <div class="filter-bar">
+      <button class="filter-chip active">All activity</button>
+      <button class="filter-chip">Check-ins</button>
+      <button class="filter-chip">Blockers</button>
+      <button class="filter-chip">GitHub</button>
+      <button class="filter-chip">AI agents</button>
+      <button class="filter-chip">This week</button>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="person">
+          <div class="avatar a-2">JR</div>
+          <div class="person-info">
+            <div class="name">Jordan R. <span style="color: var(--ink-soft); font-weight: 400; font-size: 12px;">checked in</span></div>
+            <div class="role">Today · 08:47</div>
+          </div>
+        </div>
+        <div class="mood-display">
+          <span class="mood-emoji">😄</span>
+        </div>
+      </div>
+      <div class="checkin-text" style="font-size: 13px;">"Building out the digest layout and starting on the mood picker component."</div>
+    </div>
+
+    <div class="card agent">
+      <div class="card-head">
+        <div class="person">
+          <div class="avatar a-bot">🤖</div>
+          <div class="person-info">
+            <div class="name">@codex-reviewer <span style="color: var(--ink-soft); font-weight: 400; font-size: 12px;">reviewed PR #47</span></div>
+            <div class="role">AI Agent · 08:33</div>
+          </div>
+        </div>
+      </div>
+      <div class="checkin-text" style="font-size: 13px;">"Approved with 2 suggestions on test coverage. Suggested splitting <code style="background: var(--paper-2); padding: 2px 6px; font-size: 11px;">parseCheckin()</code> into validator + parser."</div>
+    </div>
+
+    <div class="card blocker">
+      <div class="card-head">
+        <div class="person">
+          <div class="avatar a-3">AK</div>
+          <div class="person-info">
+            <div class="name">Aisha K. <span style="color: var(--ink-soft); font-weight: 400; font-size: 12px;">flagged a blocker</span></div>
+            <div class="role">Today · 08:31</div>
+          </div>
+        </div>
+        <span class="blocker-tag">Blocker</span>
+      </div>
+      <div class="checkin-text" style="font-size: 13px;">"Cloudflare account access — waiting on TA to add me to the org."</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="person">
+          <div class="avatar a-1">SP</div>
+          <div class="person-info">
+            <div class="name">Srinivasa P. <span style="color: var(--ink-soft); font-weight: 400; font-size: 12px;">opened</span> PR #47</div>
+            <div class="role">GitHub · Today · 08:14</div>
+          </div>
+        </div>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ok);">+148 / −22</span>
+      </div>
+      <div class="checkin-text" style="font-size: 13px;">Add validation to check-in payload — closes #42</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="person">
+          <div class="avatar a-5">DL</div>
+          <div class="person-info">
+            <div class="name">Diego L. <span style="color: var(--ink-soft); font-weight: 400; font-size: 12px;">resolved a blocker</span></div>
+            <div class="role">Yesterday · 17:12</div>
+          </div>
+        </div>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ok); text-transform: uppercase; letter-spacing: 0.1em;">✓ Resolved</span>
+      </div>
+      <div class="checkin-text" style="font-size: 13px;">Resolved "Need access to Figma source files" — Maya shared the team library link.</div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 4. BLOCKERS                                 -->
+  <!-- ========================================== -->
+  <section class="view" id="view-blockers">
+    <div class="section-head">
+      <div class="section-num">§ 04</div>
+      <h2 class="section-title">Active <em>blockers</em></h2>
+      <div class="section-meta">2 open · oldest 4h</div>
+    </div>
+
+    <div class="card blocker">
+      <div class="card-head">
+        <div class="person">
+          <div class="avatar a-1">SP</div>
+          <div class="person-info">
+            <div class="name">Srinivasa P.</div>
+            <div class="role">Open for 4h 12m · Backend</div>
+          </div>
+        </div>
+        <span class="blocker-tag">Blocker</span>
+      </div>
+      <div style="font-size: 15px; line-height: 1.55; margin: 12px 0; color: var(--ink);">
+        Need design decision on whether AI agent check-ins surface in the same feed or get a dedicated lane.
+      </div>
+      <div style="display: flex; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(0,0,0,0.1); flex-wrap: wrap;">
+        <button class="filter-chip">I can help</button>
+        <button class="filter-chip">Comment</button>
+        <button class="filter-chip" style="margin-left: auto;">Mark resolved</button>
+      </div>
+    </div>
+
+    <div class="card blocker">
+      <div class="card-head">
+        <div class="person">
+          <div class="avatar a-3">AK</div>
+          <div class="person-info">
+            <div class="name">Aisha K.</div>
+            <div class="role">Open for 1h 47m · DevOps</div>
+          </div>
+        </div>
+        <span class="blocker-tag">Blocker</span>
+      </div>
+      <div style="font-size: 15px; line-height: 1.55; margin: 12px 0; color: var(--ink);">
+        Cloudflare account access — waiting on TA to add me to the org.
+      </div>
+      <div style="background: var(--paper); border: 1px solid var(--rule); padding: 12px 14px; margin-top: 12px; font-size: 13px;">
+        <strong style="font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;">Jordan replied · 12m ago</strong>
+        <div style="margin-top: 6px; color: var(--ink-soft);">"I pinged the TA in Slack. Should be sorted by lunch."</div>
+      </div>
+      <div style="display: flex; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(0,0,0,0.1); flex-wrap: wrap;">
+        <button class="filter-chip">I can help</button>
+        <button class="filter-chip">Comment</button>
+        <button class="filter-chip" style="margin-left: auto;">Mark resolved</button>
+      </div>
+    </div>
+
+    <h3 style="font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--ink-soft); margin: 32px 0 14px; padding-bottom: 10px; border-bottom: 1px solid var(--rule);">Recently resolved</h3>
+
+    <div class="card" style="opacity: 0.75;">
+      <div class="card-head">
+        <div class="person">
+          <div class="avatar a-5">DL</div>
+          <div class="person-info">
+            <div class="name">Diego L. <span style="color: var(--ok); font-size: 12px; font-weight: 400;">— resolved in 2h 8m</span></div>
+            <div class="role">Yesterday</div>
+          </div>
+        </div>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ok); text-transform: uppercase; letter-spacing: 0.1em;">✓ Resolved</span>
+      </div>
+      <div style="font-size: 14px; color: var(--ink-soft); text-decoration: line-through;">Need access to Figma source files</div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 5. AVAILABILITY                             -->
+  <!-- ========================================== -->
+  <section class="view" id="view-availability">
+    <div class="section-head">
+      <div class="section-num">§ 05</div>
+      <h2 class="section-title">When can we all <em>meet</em>?</h2>
+      <div class="section-meta">Week of May 11 — May 15</div>
+    </div>
+
+    <div class="avail-shell">
+      <div class="avail-grid">
+        <div class="avail-cell head">Time PT</div>
+        <div class="avail-cell head">Mon 11</div>
+        <div class="avail-cell head">Tue 12</div>
+        <div class="avail-cell head">Wed 13</div>
+        <div class="avail-cell head">Thu 14</div>
+        <div class="avail-cell head">Fri 15</div>
+
+        <div class="avail-cell">9:00</div>
+        <div class="avail-cell free">5/6</div>
+        <div class="avail-cell tentative">3/6</div>
+        <div class="avail-cell free">5/6</div>
+        <div class="avail-cell busy">1/6</div>
+        <div class="avail-cell free">5/6</div>
+
+        <div class="avail-cell">10:00</div>
+        <div class="avail-cell consensus">6/6</div>
+        <div class="avail-cell free">5/6</div>
+        <div class="avail-cell free">4/6</div>
+        <div class="avail-cell tentative">3/6</div>
+        <div class="avail-cell consensus">6/6</div>
+
+        <div class="avail-cell">11:00</div>
+        <div class="avail-cell free">4/6</div>
+        <div class="avail-cell busy">2/6</div>
+        <div class="avail-cell consensus">6/6</div>
+        <div class="avail-cell tentative">3/6</div>
+        <div class="avail-cell free">4/6</div>
+
+        <div class="avail-cell">13:00</div>
+        <div class="avail-cell free">5/6</div>
+        <div class="avail-cell free">5/6</div>
+        <div class="avail-cell tentative">3/6</div>
+        <div class="avail-cell free">5/6</div>
+        <div class="avail-cell free">4/6</div>
+
+        <div class="avail-cell">14:00</div>
+        <div class="avail-cell tentative">3/6</div>
+        <div class="avail-cell free">4/6</div>
+        <div class="avail-cell tentative">3/6</div>
+        <div class="avail-cell consensus">6/6</div>
+        <div class="avail-cell busy">2/6</div>
+
+        <div class="avail-cell">15:00</div>
+        <div class="avail-cell busy">1/6</div>
+        <div class="avail-cell tentative">3/6</div>
+        <div class="avail-cell busy">2/6</div>
+        <div class="avail-cell free">4/6</div>
+        <div class="avail-cell busy">1/6</div>
+
+        <div class="avail-cell">16:00</div>
+        <div class="avail-cell busy">2/6</div>
+        <div class="avail-cell busy">2/6</div>
+        <div class="avail-cell busy">1/6</div>
+        <div class="avail-cell tentative">3/6</div>
+        <div class="avail-cell busy">0/6</div>
+      </div>
+
+      <div class="avail-legend">
+        <div class="legend-item"><div class="legend-swatch" style="background: var(--ink);"></div> Everyone (consensus)</div>
+        <div class="legend-item"><div class="legend-swatch" style="background: var(--ok-soft);"></div> Most free</div>
+        <div class="legend-item"><div class="legend-swatch" style="background: var(--warn-soft);"></div> Tentative</div>
+        <div class="legend-item"><div class="legend-swatch" style="background: var(--accent-soft);"></div> Most busy</div>
+      </div>
+    </div>
+
+    <div style="margin-top: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+      <div class="form-card">
+        <h4 style="font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em; margin-bottom: 14px;">Best slots this week</h4>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--paper-2); border-left: 3px solid var(--ink);">
+            <div>
+              <div style="font-weight: 600;">Monday · 10:00 PT</div>
+              <div style="font-size: 12px; color: var(--ink-soft);">All 6 members free</div>
+            </div>
+            <button class="filter-chip">Propose</button>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--paper-2); border-left: 3px solid var(--ink);">
+            <div>
+              <div style="font-weight: 600;">Wednesday · 11:00 PT</div>
+              <div style="font-size: 12px; color: var(--ink-soft);">All 6 members free</div>
+            </div>
+            <button class="filter-chip">Propose</button>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--paper-2); border-left: 3px solid var(--ink);">
+            <div>
+              <div style="font-weight: 600;">Thursday · 14:00 PT</div>
+              <div style="font-size: 12px; color: var(--ink-soft);">All 6 members free</div>
+            </div>
+            <button class="filter-chip">Propose</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h4 style="font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em; margin-bottom: 14px;">Coverage requests</h4>
+        <div class="tip-card" style="margin-bottom: 14px;">
+          <p><strong>Maya</strong> requested coverage for Tuesday's standup — medical appointment.</p>
+        </div>
+        <div class="tip-card">
+          <p><strong>Diego</strong> is on PTO Thursday. Aisha is covering the deploy on-call.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 6. GITHUB ACTIVITY                          -->
+  <!-- ========================================== -->
+  <section class="view" id="view-github">
+    <div class="section-head">
+      <div class="section-num">§ 06</div>
+      <h2 class="section-title">Live <em>activity</em> stream</h2>
+      <div class="section-meta">GitHub · synced 2m ago</div>
+    </div>
+
+    <div class="gh-shell">
+      <div>
+        <div class="repo-card">
+          <div class="repo-head">
+            <div class="repo-name"><span class="org">cse110-team-04 /</span> se-sitrep</div>
+            <div class="repo-status">Live · main</div>
+          </div>
+
+          <div class="gh-event">
+            <div class="gh-icon pr">PR</div>
+            <div class="desc"><strong>Srinivasa P.</strong> opened <code>#47 · Add validation to check-in payload</code></div>
+            <div class="meta">8:14<br>+148 −22</div>
+          </div>
+          <div class="gh-event">
+            <div class="gh-icon merge">M</div>
+            <div class="desc"><strong>Jordan R.</strong> merged <code>#45 · Wireframe component library</code> into <code>main</code></div>
+            <div class="meta">8:02<br>v0.3.1</div>
+          </div>
+          <div class="gh-event">
+            <div class="gh-icon commit">C</div>
+            <div class="desc"><strong>Jordan R.</strong> pushed 4 commits to <code>feat/digest-view</code></div>
+            <div class="meta">7:48</div>
+          </div>
+          <div class="gh-event">
+            <div class="gh-icon issue">!</div>
+            <div class="desc"><strong>Aisha K.</strong> opened issue <code>#52 · CI fails on macOS runners</code></div>
+            <div class="meta">7:22</div>
+          </div>
+          <div class="gh-event">
+            <div class="gh-icon pr">PR</div>
+            <div class="desc"><strong>@codex-reviewer</strong> reviewed <code>#46</code> — requested changes (test coverage)</div>
+            <div class="meta">Yesterday<br>16:44</div>
+          </div>
+          <div class="gh-event">
+            <div class="gh-icon commit">C</div>
+            <div class="desc"><strong>Diego L.</strong> pushed 2 commits to <code>fix/timezone-bug</code></div>
+            <div class="meta">Yesterday<br>15:11</div>
+          </div>
+          <div class="gh-event">
+            <div class="gh-icon merge">M</div>
+            <div class="desc"><strong>Maya T.</strong> merged <code>#44 · Auth refactor — session middleware</code></div>
+            <div class="meta">Yesterday<br>14:28</div>
+          </div>
+        </div>
+
+        <div class="repo-card">
+          <div class="repo-head">
+            <div class="repo-name" style="font-size: 13px;">Contributions — last 7 days</div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-soft);">47 commits · 12 PRs · 8 closed</div>
+          </div>
+          <div class="contrib-bars">
+            <div class="contrib-bar" style="height: 30%;"></div>
+            <div class="contrib-bar" style="height: 65%;"></div>
+            <div class="contrib-bar" style="height: 80%;"></div>
+            <div class="contrib-bar" style="height: 45%;"></div>
+            <div class="contrib-bar" style="height: 90%;"></div>
+            <div class="contrib-bar" style="height: 70%;"></div>
+            <div class="contrib-bar" style="height: 55%;"></div>
+          </div>
+          <div class="contrib-labels">
+            <span>Sat</span><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span>
+          </div>
+        </div>
+      </div>
+
+      <aside class="side-panel">
+        <h3>Connected sources</h3>
+        <div class="connector">
+          <div class="connector-info">
+            <div class="connector-icon">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 0 0-2.5 15.6c.4.1.5-.2.5-.4v-1.5c-2.2.5-2.7-1-2.7-1-.4-.9-.9-1.2-.9-1.2-.7-.5.1-.5.1-.5.8.1 1.2.8 1.2.8.7 1.2 1.9.9 2.4.7.1-.5.3-.9.5-1.1-1.8-.2-3.6-.9-3.6-3.9 0-.9.3-1.6.8-2.1-.1-.2-.4-1 .1-2.1 0 0 .7-.2 2.2.8a7.5 7.5 0 0 1 4 0c1.5-1 2.2-.8 2.2-.8.4 1.1.2 1.9.1 2.1.5.5.8 1.2.8 2.1 0 3-1.8 3.6-3.6 3.8.3.3.5.7.5 1.5v2.2c0 .2.1.5.5.4A8 8 0 0 0 8 0z"/></svg>
+            </div>
+            <div>
+              <div class="connector-name">GitHub</div>
+              <div class="connector-detail">cse110-team-04/se-sitrep</div>
+            </div>
+          </div>
+          <div class="connector-status live">● Live</div>
+        </div>
+
+        <div class="connector">
+          <div class="connector-info">
+            <div class="connector-icon" style="background: var(--ok);">⊞</div>
+            <div>
+              <div class="connector-name">GitHub Actions</div>
+              <div class="connector-detail">CI · 47 runs this week</div>
+            </div>
+          </div>
+          <div class="connector-status live">● Live</div>
+        </div>
+
+        <div class="connector">
+          <div class="connector-info">
+            <div class="connector-icon" style="background: var(--agent);">◇</div>
+            <div>
+              <div class="connector-name">Cloudflare Pages</div>
+              <div class="connector-detail">Deploy previews</div>
+            </div>
+          </div>
+          <div class="connector-status live">● Live</div>
+        </div>
+
+        <div class="connector" style="opacity: 0.55;">
+          <div class="connector-info">
+            <div class="connector-icon" style="background: var(--ink-soft);">#</div>
+            <div>
+              <div class="connector-name">Slack</div>
+              <div class="connector-detail">Not configured</div>
+            </div>
+          </div>
+          <div class="connector-status offline">Connect</div>
+        </div>
+
+        <h3 style="margin-top: 28px;">How it works</h3>
+        <div class="panel-card">
+          <div style="font-size: 12px; line-height: 1.6; color: var(--ink-soft);">
+            A <strong style="color: var(--ink);">Cloudflare Worker</strong> hits the GitHub REST API every 5 minutes for events on the team repo. Each member's commits and PRs are matched to their check-in by GitHub username, then offered as autocomplete suggestions when they fill out "yesterday."
+            <br><br>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px;">→ No backend, no database, no servers.</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 7. PROJECT PLANNING                         -->
+  <!-- ========================================== -->
+  <section class="view" id="view-planning">
+    <div class="section-head">
+      <div class="section-num">§ 07</div>
+      <h2 class="section-title">Project <em>planning</em></h2>
+      <div class="section-meta">Sprint 03 of 06 · 38% complete</div>
+    </div>
+
+    <!-- SPRINT BAR -->
+    <div class="sprint-bar">
+      <div class="sprint-info">
+        <div class="sprint-name">Sprint 03 — "First Light"</div>
+        <div class="sprint-dates">May 04 → May 17 · Goal: ship MVP digest + check-in flow</div>
+      </div>
+      <div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-soft); margin-bottom: 6px;">Burndown</div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width: 38%;"></div>
+        </div>
+      </div>
+      <div style="text-align: right;">
+        <div class="progress-num">12<span>/32 pts</span></div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-soft);">Days left: 9</div>
+      </div>
+      <button class="filter-chip">Plan next sprint →</button>
+    </div>
+
+    <!-- KANBAN -->
+    <div class="kanban">
+      <div class="column">
+        <div class="column-head">
+          <div class="column-title">Backlog</div>
+          <div class="column-count">14</div>
+        </div>
+
+        <div class="ticket">
+          <div class="ticket-id">SIT-058</div>
+          <div class="ticket-title">Email digest for offline team members</div>
+          <div class="ticket-foot">
+            <div class="ticket-tags">
+              <span class="tag feature">Feature</span>
+              <span class="tag priority-med">P2</span>
+            </div>
+            <div class="ticket-avatar" style="background: var(--ink-soft);">—</div>
+          </div>
+        </div>
+
+        <div class="ticket">
+          <div class="ticket-id">SIT-057</div>
+          <div class="ticket-title">Slack integration — push blocker alerts to channel</div>
+          <div class="ticket-foot">
+            <div class="ticket-tags">
+              <span class="tag feature">Feature</span>
+              <span class="tag priority-med">P2</span>
+            </div>
+            <div class="ticket-avatar" style="background: var(--ink-soft);">—</div>
+          </div>
+        </div>
+
+        <div class="ticket">
+          <div class="ticket-id">SIT-056</div>
+          <div class="ticket-title">AI agent dedicated lane in feed (vs. mixed)</div>
+          <div class="ticket-foot">
+            <div class="ticket-tags">
+              <span class="tag design">Design</span>
+              <span class="tag priority-high">P1</span>
+            </div>
+            <div class="ticket-avatar" style="background: var(--ink-soft);">—</div>
+          </div>
+        </div>
+
+        <div class="ticket">
+          <div class="ticket-id">SIT-055</div>
+          <div class="ticket-title">Mood trend chart — 30 day rolling</div>
+          <div class="ticket-foot">
+            <div class="ticket-tags">
+              <span class="tag feature">Feature</span>
+            </div>
+            <div class="ticket-avatar" style="background: var(--ink-soft);">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="column">
+        <div class="column-head">
+          <div class="column-title">In Progress</div>
+          <div class="column-count">5</div>
+        </div>
+
+        <div class="ticket">
+          <div class="ticket-id">SIT-047</div>
+          <div class="ticket-title">Check-in submission API + validation</div>
+          <div class="ticket-foot">
+            <div class="ticket-tags">
+              <span class="tag feature">Feature</span>
+              <span class="tag priority-high">P1</span>
+            </div>
+            <div class="ticket-avatar a-1">SP</div>
+          </div>
+        </div>
+
+        <div class="ticket">
+          <div class="ticket-id">SIT-046</div>
+          <div class="ticket-title">Digest page layout + mood picker</div>
+          <div class="ticket-foot">
+            <div class="ticket-tags">
+              <span class="tag feature">Feature</span>
+              <span class="tag priority-high">P1</span>
+            </div>
+            <div class="ticket-avatar a-2">JR</div>
+          </div>
+        </div>
+
+        <div class="ticket">
+          <div class="ticket-id">SIT-049</div>
+          <div class="ticket-title">Cloudflare Pages deploy pipeline</div>
+          <div class="ticket-foot">
+            <div class="ticket-tags">
+              <span class="tag feature">Feature</span>
+              <span class="tag priority-med">P2</span>
+            </div>
+            <div class="ticket-avatar a-3">AK</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="column">
+        <div class="column-head">
+          <div class="column-title">In Review</div>
+          <div class="column-count">3</div>
+        </div>
+
+        <div class="ticket">
+          <div class="ticket-id">SIT-042</div>
+          <div class="ticket-title">Digest aggregation logic (PR #47)</div>
+          <div class="ticket-foot">
+            <div class="ticket-tags">
+              <span class="tag feature">Feature</span>
+              <span class="tag testing">Tests ✓</span>
+            </div>
+            <div class="ticket-avatar a-1">SP</div>
+          </div>
+        </div>
+
+        <div class="ticket">
+          <div class="ticket-id">SIT-041</div>
+          <div class="ticket-title">Auth refactor — session middleware</div>
+          <div class="ticket-foot">
+            <div class="ticket-tags">
+              <span class="tag feature">Feature</span>
+              <span class="tag priority-high">P1</span>
+            </div>
+            <div class="ticket-avatar a-4">MT</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="column">
+        <div class="column-head">
+          <div class="column-title">Done · Sprint 03</div>
+          <div class="column-count">8</div>
+        </div>
+
+        <div class="ticket" style="opacity: 0.7;">
+          <div class="ticket-id">SIT-039 ✓</div>
+          <div class="ticket-title">User personas + journey maps</div>
+          <div class="ticket-foot">
+            <div class="ticket-tags">
+              <span class="tag design">Design</span>
+            </div>
+            <div class="ticket-avatar a-2">JR</div>
+          </div>
+        </div>
+
+        <div class="ticket" style="opacity: 0.7;">
+          <div class="ticket-id">SIT-038 ✓</div>
+          <div class="ticket-title">ADR-004: Vanilla JS, no framework</div>
+          <div class="ticket-foot">
+            <div class="ticket-tags">
+              <span class="tag design">ADR</span>
+            </div>
+            <div class="ticket-avatar a-3">AK</div>
+          </div>
+        </div>
+
+        <div class="ticket" style="opacity: 0.7;">
+          <div class="ticket-id">SIT-037 ✓</div>
+          <div class="ticket-title">Wireframes — all 7 core views</div>
+          <div class="ticket-foot">
+            <div class="ticket-tags">
+              <span class="tag design">Design</span>
+            </div>
+            <div class="ticket-avatar a-2">JR</div>
+          </div>
+        </div>
+
+        <div class="ticket" style="opacity: 0.7;">
+          <div class="ticket-id">SIT-036 ✓</div>
+          <div class="ticket-title">CI: lint + unit test on PR</div>
+          <div class="ticket-foot">
+            <div class="ticket-tags">
+              <span class="tag testing">Testing</span>
+            </div>
+            <div class="ticket-avatar a-3">AK</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USER STORIES -->
+    <h3 style="font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--ink-soft); margin: 32px 0 18px; padding-bottom: 10px; border-bottom: 1px solid var(--rule);">User stories driving this sprint</h3>
+
+    <div class="stories-grid">
+      <div class="story-card">
+        <div class="story-id">US-12 · Spec-driven</div>
+        <div class="story-text">As a <em>team lead</em>, I want to see who has and hasn't checked in today, so I can <em>nudge stragglers</em> before standup.</div>
+        <div class="story-meta">
+          <span>Acceptance: 4 of 4 ✓</span>
+          <span>3 pts</span>
+        </div>
+      </div>
+
+      <div class="story-card">
+        <div class="story-id">US-13 · Spec-driven</div>
+        <div class="story-text">As a <em>developer</em>, I want my GitHub activity to auto-fill my check-in, so I don't have to <em>retype what I shipped</em>.</div>
+        <div class="story-meta">
+          <span>Acceptance: 2 of 5</span>
+          <span>5 pts</span>
+        </div>
+      </div>
+
+      <div class="story-card">
+        <div class="story-id">US-14 · Spec-driven</div>
+        <div class="story-text">As a <em>blocked teammate</em>, I want to flag a blocker once and have it surface to anyone who can help, so I'm <em>not waiting until the next standup</em>.</div>
+        <div class="story-meta">
+          <span>Acceptance: 3 of 3 ✓</span>
+          <span>2 pts</span>
+        </div>
+      </div>
+
+      <div class="story-card">
+        <div class="story-id">US-15 · Spec-driven</div>
+        <div class="story-text">As a <em>team member</em>, I want a private mood signal aggregated across the team, so leads can <em>spot burnout trends</em> without surveilling individuals.</div>
+        <div class="story-meta">
+          <span>Acceptance: 1 of 4</span>
+          <span>3 pts</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROADMAP -->
+    <div class="roadmap">
+      <div class="roadmap-head">Sprint roadmap — Q2 2026</div>
+      <div class="roadmap-grid">
+        <div class="roadmap-cell head">Lane</div>
+        <div class="roadmap-cell head">S 01</div>
+        <div class="roadmap-cell head">S 02</div>
+        <div class="roadmap-cell head">S 03 ←</div>
+        <div class="roadmap-cell head">S 04</div>
+        <div class="roadmap-cell head">S 05</div>
+        <div class="roadmap-cell head">S 06</div>
+
+        <div class="roadmap-cell lane">Design</div>
+        <div class="roadmap-cell"><div class="roadmap-bar design">Personas + Wireframes</div></div>
+        <div class="roadmap-cell"><div class="roadmap-bar design">Design system</div></div>
+        <div class="roadmap-cell"></div>
+        <div class="roadmap-cell"><div class="roadmap-bar design">Polish + a11y</div></div>
+        <div class="roadmap-cell"></div>
+        <div class="roadmap-cell"></div>
+
+        <div class="roadmap-cell lane">Features</div>
+        <div class="roadmap-cell"></div>
+        <div class="roadmap-cell"><div class="roadmap-bar feat">Check-in core</div></div>
+        <div class="roadmap-cell"><div class="roadmap-bar now">Digest + Blockers</div></div>
+        <div class="roadmap-cell"><div class="roadmap-bar feat">Availability + Mood</div></div>
+        <div class="roadmap-cell"><div class="roadmap-bar feat">GitHub integration</div></div>
+        <div class="roadmap-cell"><div class="roadmap-bar feat">AI agent tracking</div></div>
+
+        <div class="roadmap-cell lane">Infra</div>
+        <div class="roadmap-cell"><div class="roadmap-bar test">Repo + CI setup</div></div>
+        <div class="roadmap-cell"></div>
+        <div class="roadmap-cell"><div class="roadmap-bar test">Deploy pipeline</div></div>
+        <div class="roadmap-cell"></div>
+        <div class="roadmap-cell"><div class="roadmap-bar test">e2e tests</div></div>
+        <div class="roadmap-cell"></div>
+
+        <div class="roadmap-cell lane">Process</div>
+        <div class="roadmap-cell"><div class="roadmap-bar test">ADR-001..003</div></div>
+        <div class="roadmap-cell"><div class="roadmap-bar test">Retrospective</div></div>
+        <div class="roadmap-cell"><div class="roadmap-bar test">Mid-review</div></div>
+        <div class="roadmap-cell"><div class="roadmap-bar test">Peer review</div></div>
+        <div class="roadmap-cell"><div class="roadmap-bar test">Retrospective</div></div>
+        <div class="roadmap-cell"><div class="roadmap-bar test">Final demo</div></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-mark">SitRep · CSE 110 · Team Project Prototype</div>
+  <div>v0.1.0 · vanilla HTML/CSS/JS · zero dependencies</div>
+</footer>
+
+<script>
+  // Tab switching
+  const tabs = document.querySelectorAll('.tab');
+  const views = document.querySelectorAll('.view');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.view;
+      tabs.forEach(t => t.classList.remove('active'));
+      views.forEach(v => v.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('view-' + target).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  // Mood picker
+  const moodBtns = document.querySelectorAll('.mood-btn');
+  moodBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      moodBtns.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+  });
+
+  // Blocker toggle
+  const blockerToggle = document.getElementById('blocker-toggle');
+  const toggleCheck = document.getElementById('toggle-check');
+  const blockerDetail = document.getElementById('blocker-detail');
+  if (blockerToggle) {
+    blockerToggle.addEventListener('click', () => {
+      blockerToggle.classList.toggle('active');
+      if (blockerToggle.classList.contains('active')) {
+        toggleCheck.textContent = '✓';
+        blockerDetail.style.display = 'block';
+      } else {
+        toggleCheck.textContent = '';
+        blockerDetail.style.display = 'none';
+      }
+    });
+  }
+
+  // Filter chips
+  document.querySelectorAll('.filter-bar').forEach(bar => {
+    const chips = bar.querySelectorAll('.filter-chip');
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        chips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
+
+<!-- 
+
+Most important features to have:
+
+1. Daily Digest - A summary view that aggregates the day's check-ins into one digestible snapshot. This could be a page that shows the team's status for a given day.
+2. Smart Check-ins - This is the heart of the project prompt. Async daily check-ins where each team member reports what they did, what they're doing next, and any blockers. This directly answers "have we checked in today?" and "what is everyone doing?"
+3. Blockers - The prompt explicitly calls out blockers. A simple system to flag and surface blockers so the team can see who needs help.
+4. Scheduling/Availability - The prompt asks "when can we all meet?" Some kind of availability view or meeting coordination feature would fit well.
+5. Mood/Wellbeing Signal — Not explicitly in Steady's list, but the prompt asks "are we feeling bad?" and "do we need someone to cover for us?" A simple mood indicator during check-in (like a 1–5 scale or emoji) would be a thoughtful addition that directly addresses the prompt.
+
+6. Activity Integrations — Since you're already using GitHub, pulling in commit or PR activity to auto-enrich check-ins would be impressive and relevant. This is feasible with the GitHub API since it doesn't require a backend beyond what Cloudflare Workers could handle.
+7. Project Planning and tracking - Plan Projects and track them - plan out features for spec driven development - plan out user stories - etc. 
+
+
+-->
