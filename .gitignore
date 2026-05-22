@@ -3,3 +3,5 @@ coverage/
 dist/
 .env
 .DS_Store
+.js
+docs/research/
