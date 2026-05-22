@@ -1,0 +1,130 @@
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table _meta {
+  version "v0.1"
+  updated_at "5-20-2026"
+}
+
+Table users {
+  id integer [primary key]
+  username string [not null, unique, note: 'informal login auth, e.g. jhops48']
+  email string [not null, unique]
+  pass_hash string [not null, note: 'use a slow, memory-hard hash like Argon2id']
+  created_at timestamp [default: 'Now()']
+  deleted_at timestamp [null, note: 'soft-to-hard deletion scheme; if column is not NULL then row is soft-deleted and will be hard-deleted after timestamp in kill_after']
+  kill_after timestamp [null, note: 'soft-to-hard deletion scheme: if column is not NULL then row will be hard-deleted after this date']
+}
+
+Table sessions {
+  id string [primary key]
+  user_id integer [not null]
+  created_at timestamp [default: 'Now()']
+  expires_at timestamp [not null]
+  revoked_at timestamp [null]
+  user_agent string [null]
+  ip_address string [null]
+}
+Ref: sessions.user_id < users.id
+
+Table teams {
+  id integer [primary key]
+  team_name string [not null]
+  invite_code string [not null, unique, note: 'Maybe add rotation if we get to that']
+  created_at timestamp [default: 'Now()']
+  created_by_user integer [not null]
+  deleted_at timestamp [null, note: 'soft-to-hard deletion scheme; if column is not NULL then row is soft-deleted and will be hard-deleted after timestamp in kill_after']
+  kill_after timestamp [null, note: 'soft-to-hard deletion scheme: if column is not NULL then row will be hard-deleted after this date']
+}
+Ref: teams.created_by_user < users.id
+
+Table team_members {
+  id integer [primary key]
+  user_id integer [not null]
+  team_id integer [not null]
+  display_name string [not null, note: 'formal, e.g. Jimmy Hopkins']
+  role enum [default: 'member']
+  joined_at timestamp [default: 'Now()']
+  left_at timestamp [null, note: 'membership permeates as long as team exists so user can rejoin']
+  note: 'one unique membership per user/team; will remain active in read-only state while parent user is soft-deleted, but, for privacy, will be deleted along w/ all associated content once parent user is hard deleted; enforce UNIQUE(user_id, team_id)'
+}
+Ref: team_members.user_id < users.id
+Ref: team_members.team_id < teams.id
+
+Table check_ins {
+  id integer [primary key]
+  posted_by_member integer [not null]
+  for_project integer [not null]
+  worked_on string [null]
+  will_work_on string [null]
+  blockers string [null]
+  mood enum [not null]
+  created_at timestamp [default: 'Now()']
+  kill_after timestamp [not null, note: 'Could be a configuration for check-ins to be deleted or not after a certain time past creation, as dictated by project administrator']
+}
+Ref: check_ins.posted_by_member < team_members.id
+Ref: check_ins.for_project < projects.id
+
+Table projects {
+  id integer [primary key]
+  title string [not null]
+  for_team integer [not null]
+  lead_by_member integer [null]
+  deadline timestamp [null]
+  status enum [null]
+  check_in_retention_days integer [null]
+  created_at timestamp [default: 'Now()']
+  archived_at timestamp [null, note: 'Deactivated after a project is complete or abandoned, may be reactivated but otherwise should be archived as read-only. On deletion may be hard-deleted from DB']
+}
+Ref: projects.for_team < teams.id
+Ref: projects.lead_by_member < team_members.id
+
+Table project_members {
+  id integer [primary key]
+  user_id integer [not null]
+  proj_id integer [not null]
+  role enum [default: 'Member']
+  created_at timestamp [default: 'Now()']
+  retired_at timestamp [null, note: 'Soft-deletion; if a active user leaves a project, they will be marked as retired but what they did on the project will persist; if user hard deletes account, activity on project will be removed']
+  note: 'One unique membership per user/project; enforce UNIQUE(user_id, project_id)'
+}
+Ref: project_members.user_id < team_members.id
+Ref: project_members.proj_id < projects.id
+
+Table tasks {
+  id integer [primary key]
+  title string [not null]
+  for_project integer [not null]
+  deadline timestamp [null]
+  status string [null]
+  created_at timestamp [default: 'Now()']
+  retired_at timestamp [null, note: 'Deactivated after a task is complete or abandoned, may be reactivated but otherwise should be archived. On deletion may be hard-deleted from DB']
+}
+Ref: tasks.for_project < projects.id
+
+Table task_members { //filter out memberships in soft-deleted teams, delete associated memberships upon hard-deletion of a team
+  id integer [primary key]
+  user_id integer [not null]
+  task_id integer [not null]
+  role enum [default: 'Assignee']
+  created_at timestamp [default: 'Now()']
+  retired_at timestamp [null, note: 'Soft deletion; member may assign or be assigned to or off a task, but either way their activity on the task will persist unless their account is hard deleted']
+  note: 'One unique assignee per user/task; enforce UNIQUE(user_id, task_id)'
+}
+Ref: task_members.user_id < team_members.id
+Ref: task_members.task_id < tasks.id
+
+Table cover_reqs {
+  id integer [primary key]
+  title string [not null]
+  for_project integer [not null]
+  posted_by_member integer [not null]
+  start timestamp [not null, note: 'start time can be modified while active, cannot be set before current date']
+  end timestamp [not null, note: 'cannot be set before start time; end time can be modified while active, but the request itself will be hard-deleted if this timestamp is passed']
+  description string [null]
+  fulfilled_at timestamp [null]
+  fulfilled_by_member integer [null]
+  created_at timestamp [default: 'Now()']
+}
+Ref: cover_reqs.for_project < projects.id
+Ref: cover_reqs.posted_by_member < team_members.id
+Ref: cover_reqs.fulfilled_by_member < team_members.id
