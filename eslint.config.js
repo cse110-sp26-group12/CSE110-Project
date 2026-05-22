@@ -1,6 +1,11 @@
 import js from '@eslint/js';
 
 export default [
+  //Can this linter shut the fuck up about the research prototypes
+  {
+    ignores: ['docs/research/**']
+  },
+  
   js.configs.recommended,
   {
     ignores: ['node_modules/**', 'dist/**', 'coverage/**'],

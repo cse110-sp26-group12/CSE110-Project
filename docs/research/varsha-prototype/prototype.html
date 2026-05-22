@@ -1,350 +1,552 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AgileFlow | Team Coordination</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
     <style>
-        .kanban-column { min-height: 400px; }
-        .active-tab { border-bottom: 2px solid #3b82f6; color: #3b82f6; }
-        .priority-High { border-left: 4px solid #ef4444; }
-        .priority-Medium { border-left: 4px solid #f59e0b; }
-        .priority-Low { border-left: 4px solid #10b981; }
+      .kanban-column {
+        min-height: 400px;
+      }
+      .active-tab {
+        border-bottom: 2px solid #3b82f6;
+        color: #3b82f6;
+      }
+      .priority-High {
+        border-left: 4px solid #ef4444;
+      }
+      .priority-Medium {
+        border-left: 4px solid #f59e0b;
+      }
+      .priority-Low {
+        border-left: 4px solid #10b981;
+      }
     </style>
-</head>
-<body class="bg-gray-50 text-gray-800 font-sans">
-
+  </head>
+  <body class="bg-gray-50 text-gray-800 font-sans">
     <div id="app" class="min-h-screen flex flex-col">
-        <!-- Header -->
-        <header class="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-blue-600 flex items-center">
-                <i class="fas fa-layer-group mr-2"></i> AgileFlow
-            </h1>
-            <nav class="flex space-x-6">
-                <button onclick="showSection('dashboard')" class="tab-btn active-tab px-2 py-1 font-medium transition" id="tab-dashboard">Dashboard</button>
-                <button onclick="showSection('goals')" class="tab-btn px-2 py-1 font-medium transition text-gray-500 hover:text-blue-500" id="tab-goals">Goals</button>
-                <button onclick="showSection('board')" class="tab-btn px-2 py-1 font-medium transition text-gray-500 hover:text-blue-500" id="tab-board">Sprint Board</button>
-                <button onclick="showSection('team')" class="tab-btn px-2 py-1 font-medium transition text-gray-500 hover:text-blue-500" id="tab-team">Team</button>
-                <button onclick="showSection('standup')" class="tab-btn px-2 py-1 font-medium transition text-gray-500 hover:text-blue-500" id="tab-standup">Standup</button>
-                <button onclick="showSection('updates')" class="tab-btn px-2 py-1 font-medium transition text-gray-500 hover:text-blue-500" id="tab-updates">Updates</button>
-            </nav>
-        </header>
+      <!-- Header -->
+      <header
+        class="bg-white shadow-sm px-6 py-4 flex justify-between items-center"
+      >
+        <h1 class="text-2xl font-bold text-blue-600 flex items-center">
+          <i class="fas fa-layer-group mr-2"></i> AgileFlow
+        </h1>
+        <nav class="flex space-x-6">
+          <button
+            onclick="showSection('dashboard')"
+            class="tab-btn active-tab px-2 py-1 font-medium transition"
+            id="tab-dashboard"
+          >
+            Dashboard
+          </button>
+          <button
+            onclick="showSection('goals')"
+            class="tab-btn px-2 py-1 font-medium transition text-gray-500 hover:text-blue-500"
+            id="tab-goals"
+          >
+            Goals
+          </button>
+          <button
+            onclick="showSection('board')"
+            class="tab-btn px-2 py-1 font-medium transition text-gray-500 hover:text-blue-500"
+            id="tab-board"
+          >
+            Sprint Board
+          </button>
+          <button
+            onclick="showSection('team')"
+            class="tab-btn px-2 py-1 font-medium transition text-gray-500 hover:text-blue-500"
+            id="tab-team"
+          >
+            Team
+          </button>
+          <button
+            onclick="showSection('standup')"
+            class="tab-btn px-2 py-1 font-medium transition text-gray-500 hover:text-blue-500"
+            id="tab-standup"
+          >
+            Standup
+          </button>
+          <button
+            onclick="showSection('updates')"
+            class="tab-btn px-2 py-1 font-medium transition text-gray-500 hover:text-blue-500"
+            id="tab-updates"
+          >
+            Updates
+          </button>
+        </nav>
+      </header>
 
-        <!-- Main Content Area -->
-        <main class="flex-grow p-6">
-            
-            <!-- Dashboard Section -->
-            <section id="section-dashboard" class="content-section">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-xl shadow-sm">
-                        <h3 class="text-gray-500 text-sm font-semibold uppercase">Sprint Progress</h3>
-                        <div class="mt-4 flex items-end justify-between">
-                            <span class="text-3xl font-bold" id="stats-progress">0%</span>
-                            <span class="text-blue-500 text-sm" id="stats-task-count">0 / 0 Tasks</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2 mt-4">
-                            <div id="progress-bar" class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm">
-                        <h3 class="text-gray-500 text-sm font-semibold uppercase">Active OKRs</h3>
-                        <p class="text-3xl font-bold mt-4" id="stats-goals">0</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm">
-                        <h3 class="text-gray-500 text-sm font-semibold uppercase">Blockers</h3>
-                        <p class="text-3xl font-bold mt-4 text-red-500" id="stats-blockers">0</p>
-                    </div>
+      <!-- Main Content Area -->
+      <main class="flex-grow p-6">
+        <!-- Dashboard Section -->
+        <section id="section-dashboard" class="content-section">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+              <h3 class="text-gray-500 text-sm font-semibold uppercase">
+                Sprint Progress
+              </h3>
+              <div class="mt-4 flex items-end justify-between">
+                <span class="text-3xl font-bold" id="stats-progress">0%</span>
+                <span class="text-blue-500 text-sm" id="stats-task-count"
+                  >0 / 0 Tasks</span
+                >
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2 mt-4">
+                <div
+                  id="progress-bar"
+                  class="bg-blue-600 h-2 rounded-full"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+              <h3 class="text-gray-500 text-sm font-semibold uppercase">
+                Active OKRs
+              </h3>
+              <p class="text-3xl font-bold mt-4" id="stats-goals">0</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+              <h3 class="text-gray-500 text-sm font-semibold uppercase">
+                Blockers
+              </h3>
+              <p
+                class="text-3xl font-bold mt-4 text-red-500"
+                id="stats-blockers"
+              >
+                0
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-xl shadow-sm">
+            <h2 class="text-xl font-bold mb-4">Team Primary Goal</h2>
+            <div class="p-4 bg-blue-50 border border-blue-100 rounded-lg">
+              <p class="text-blue-800 italic" id="sprint-goal-display">
+                Set your primary goal in the Goals section.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Goals Section -->
+        <section id="section-goals" class="content-section hidden">
+          <div class="max-w-4xl mx-auto">
+            <div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+              <h2 class="text-xl font-bold mb-4">
+                Create New Goal / User Story
+              </h2>
+              <form id="goal-form" class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700"
+                    >Description</label
+                  >
+                  <input
+                    type="text"
+                    id="goal-desc"
+                    required
+                    class="mt-1 block w-full rounded-md border-gray-300 border p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  />
                 </div>
-                
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h2 class="text-xl font-bold mb-4">Team Primary Goal</h2>
-                    <div class="p-4 bg-blue-50 border border-blue-100 rounded-lg">
-                        <p class="text-blue-800 italic" id="sprint-goal-display">Set your primary goal in the Goals section.</p>
-                    </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700"
+                      >Type</label
+                    >
+                    <select
+                      id="goal-type"
+                      class="mt-1 block w-full rounded-md border-gray-300 border p-2 shadow-sm"
+                    >
+                      <option value="OKR">OKR</option>
+                      <option value="Story">User Story</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700"
+                      >Priority</label
+                    >
+                    <select
+                      id="goal-priority"
+                      class="mt-1 block w-full rounded-md border-gray-300 border p-2 shadow-sm"
+                    >
+                      <option value="High">High</option>
+                      <option value="Medium" selected>Medium</option>
+                      <option value="Low">Low</option>
+                    </select>
+                  </div>
                 </div>
-            </section>
+                <button
+                  type="submit"
+                  class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+                >
+                  Add Goal
+                </button>
+              </form>
+            </div>
 
-            <!-- Goals Section -->
-            <section id="section-goals" class="content-section hidden">
-                <div class="max-w-4xl mx-auto">
-                    <div class="bg-white p-6 rounded-xl shadow-sm mb-8">
-                        <h2 class="text-xl font-bold mb-4">Create New Goal / User Story</h2>
-                        <form id="goal-form" class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Description</label>
-                                <input type="text" id="goal-desc" required class="mt-1 block w-full rounded-md border-gray-300 border p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Type</label>
-                                    <select id="goal-type" class="mt-1 block w-full rounded-md border-gray-300 border p-2 shadow-sm">
-                                        <option value="OKR">OKR</option>
-                                        <option value="Story">User Story</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Priority</label>
-                                    <select id="goal-priority" class="mt-1 block w-full rounded-md border-gray-300 border p-2 shadow-sm">
-                                        <option value="High">High</option>
-                                        <option value="Medium" selected>Medium</option>
-                                        <option value="Low">Low</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">Add Goal</button>
-                        </form>
-                    </div>
+            <div id="goals-list" class="space-y-4">
+              <!-- Goals will appear here -->
+            </div>
+          </div>
+        </section>
 
-                    <div id="goals-list" class="space-y-4">
-                        <!-- Goals will appear here -->
-                    </div>
+        <!-- Sprint Board Section -->
+        <section id="section-board" class="content-section hidden">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">Sprint Planning Board</h2>
+            <button
+              onclick="toggleTaskModal()"
+              class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition"
+            >
+              <i class="fas fa-plus mr-2"></i>New Task
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 overflow-x-auto">
+            <div
+              class="bg-gray-200 p-4 rounded-lg kanban-column"
+              id="col-backlog"
+            >
+              <h3
+                class="font-bold text-gray-600 mb-4 uppercase text-sm tracking-wider"
+              >
+                Backlog
+              </h3>
+              <div class="task-list space-y-3" id="tasks-backlog"></div>
+            </div>
+            <div
+              class="bg-blue-50 p-4 rounded-lg kanban-column"
+              id="col-inprogress"
+            >
+              <h3
+                class="font-bold text-blue-600 mb-4 uppercase text-sm tracking-wider"
+              >
+                In Progress
+              </h3>
+              <div class="task-list space-y-3" id="tasks-inprogress"></div>
+            </div>
+            <div
+              class="bg-yellow-50 p-4 rounded-lg kanban-column"
+              id="col-review"
+            >
+              <h3
+                class="font-bold text-yellow-600 mb-4 uppercase text-sm tracking-wider"
+              >
+                Review
+              </h3>
+              <div class="task-list space-y-3" id="tasks-review"></div>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg kanban-column" id="col-done">
+              <h3
+                class="font-bold text-green-600 mb-4 uppercase text-sm tracking-wider"
+              >
+                Done
+              </h3>
+              <div class="task-list space-y-3" id="tasks-done"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Team Section -->
+        <section id="section-team" class="content-section hidden">
+          <div class="bg-white p-6 rounded-xl shadow-sm">
+            <h2 class="text-xl font-bold mb-6">
+              Team Coordination & Assignments
+            </h2>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                    >
+                      Team Member
+                    </th>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                    >
+                      Current Tasks
+                    </th>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                    >
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="team-table-body" class="divide-y divide-gray-200">
+                  <!-- Team assignments populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Standup Section -->
+        <section id="section-standup" class="content-section hidden">
+          <div class="max-w-2xl mx-auto">
+            <div
+              class="bg-white p-6 rounded-xl shadow-sm mb-8 border-t-4 border-blue-500"
+            >
+              <h2 class="text-xl font-bold mb-4">Daily Standup Update</h2>
+              <form id="standup-form" class="space-y-4">
+                <input
+                  type="text"
+                  id="su-name"
+                  placeholder="Your Name"
+                  required
+                  class="w-full border p-2 rounded"
+                />
+                <div>
+                  <label class="block text-sm font-medium text-gray-600"
+                    >What did I do yesterday?</label
+                  >
+                  <textarea
+                    id="su-yesterday"
+                    rows="2"
+                    class="w-full border p-2 rounded"
+                    required
+                  ></textarea>
                 </div>
-            </section>
-
-            <!-- Sprint Board Section -->
-            <section id="section-board" class="content-section hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold">Sprint Planning Board</h2>
-                    <button onclick="toggleTaskModal()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition">
-                        <i class="fas fa-plus mr-2"></i>New Task
-                    </button>
+                <div>
+                  <label class="block text-sm font-medium text-gray-600"
+                    >What am I doing today?</label
+                  >
+                  <textarea
+                    id="su-today"
+                    rows="2"
+                    class="w-full border p-2 rounded"
+                    required
+                  ></textarea>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 overflow-x-auto">
-                    <div class="bg-gray-200 p-4 rounded-lg kanban-column" id="col-backlog">
-                        <h3 class="font-bold text-gray-600 mb-4 uppercase text-sm tracking-wider">Backlog</h3>
-                        <div class="task-list space-y-3" id="tasks-backlog"></div>
-                    </div>
-                    <div class="bg-blue-50 p-4 rounded-lg kanban-column" id="col-inprogress">
-                        <h3 class="font-bold text-blue-600 mb-4 uppercase text-sm tracking-wider">In Progress</h3>
-                        <div class="task-list space-y-3" id="tasks-inprogress"></div>
-                    </div>
-                    <div class="bg-yellow-50 p-4 rounded-lg kanban-column" id="col-review">
-                        <h3 class="font-bold text-yellow-600 mb-4 uppercase text-sm tracking-wider">Review</h3>
-                        <div class="task-list space-y-3" id="tasks-review"></div>
-                    </div>
-                    <div class="bg-green-50 p-4 rounded-lg kanban-column" id="col-done">
-                        <h3 class="font-bold text-green-600 mb-4 uppercase text-sm tracking-wider">Done</h3>
-                        <div class="task-list space-y-3" id="tasks-done"></div>
-                    </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-600"
+                    >Any blockers?</label
+                  >
+                  <textarea
+                    id="su-blockers"
+                    rows="2"
+                    class="w-full border p-2 rounded"
+                    placeholder="None"
+                  ></textarea>
                 </div>
-            </section>
+                <button
+                  type="submit"
+                  class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+                >
+                  Submit Update
+                </button>
+              </form>
+            </div>
 
-            <!-- Team Section -->
-            <section id="section-team" class="content-section hidden">
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h2 class="text-xl font-bold mb-6">Team Coordination & Assignments</h2>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Team Member</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Current Tasks</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="team-table-body" class="divide-y divide-gray-200">
-                                <!-- Team assignments populated by JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
+            <div id="standup-list" class="space-y-4">
+              <!-- Standup entries -->
+            </div>
+          </div>
+        </section>
 
-            <!-- Standup Section -->
-            <section id="section-standup" class="content-section hidden">
-                <div class="max-w-2xl mx-auto">
-                    <div class="bg-white p-6 rounded-xl shadow-sm mb-8 border-t-4 border-blue-500">
-                        <h2 class="text-xl font-bold mb-4">Daily Standup Update</h2>
-                        <form id="standup-form" class="space-y-4">
-                            <input type="text" id="su-name" placeholder="Your Name" required class="w-full border p-2 rounded">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-600">What did I do yesterday?</label>
-                                <textarea id="su-yesterday" rows="2" class="w-full border p-2 rounded" required></textarea>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-600">What am I doing today?</label>
-                                <textarea id="su-today" rows="2" class="w-full border p-2 rounded" required></textarea>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-600">Any blockers?</label>
-                                <textarea id="su-blockers" rows="2" class="w-full border p-2 rounded" placeholder="None"></textarea>
-                            </div>
-                            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Submit Update</button>
-                        </form>
-                    </div>
-
-                    <div id="standup-list" class="space-y-4">
-                        <!-- Standup entries -->
-                    </div>
-                </div>
-            </section>
-
-            <!-- Updates Section -->
-            <section id="section-updates" class="content-section hidden">
-                <div class="max-w-4xl mx-auto">
-                    <h2 class="text-2xl font-bold mb-6">Activity Feed</h2>
-                    <div id="updates-feed" class="space-y-4">
-                        <!-- Updates populated by JS -->
-                    </div>
-                </div>
-            </section>
-
-        </main>
+        <!-- Updates Section -->
+        <section id="section-updates" class="content-section hidden">
+          <div class="max-w-4xl mx-auto">
+            <h2 class="text-2xl font-bold mb-6">Activity Feed</h2>
+            <div id="updates-feed" class="space-y-4">
+              <!-- Updates populated by JS -->
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
 
     <!-- Task Modal -->
-    <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 class="text-lg font-bold mb-4">Add New Task</h3>
-            <form id="task-form" class="space-y-4">
-                <input type="text" id="task-title" placeholder="Task title" required class="w-full border p-2 rounded">
-                <select id="task-owner" class="w-full border p-2 rounded">
-                    <option value="Unassigned">Assign to...</option>
-                    <option value="Alex">Alex</option>
-                    <option value="Jordan">Jordan</option>
-                    <option value="Sam">Sam</option>
-                    <option value="Taylor">Taylor</option>
-                </select>
-                <select id="task-priority" class="w-full border p-2 rounded">
-                    <option value="High">High Priority</option>
-                    <option value="Medium" selected>Medium Priority</option>
-                    <option value="Low">Low Priority</option>
-                </select>
-                <div class="flex justify-end space-x-2">
-                    <button type="button" onclick="toggleTaskModal()" class="px-4 py-2 text-gray-600">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Create</button>
-                </div>
-            </form>
-        </div>
+    <div
+      id="task-modal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4"
+    >
+      <div class="bg-white rounded-lg p-6 w-full max-w-md">
+        <h3 class="text-lg font-bold mb-4">Add New Task</h3>
+        <form id="task-form" class="space-y-4">
+          <input
+            type="text"
+            id="task-title"
+            placeholder="Task title"
+            required
+            class="w-full border p-2 rounded"
+          />
+          <select id="task-owner" class="w-full border p-2 rounded">
+            <option value="Unassigned">Assign to...</option>
+            <option value="Alex">Alex</option>
+            <option value="Jordan">Jordan</option>
+            <option value="Sam">Sam</option>
+            <option value="Taylor">Taylor</option>
+          </select>
+          <select id="task-priority" class="w-full border p-2 rounded">
+            <option value="High">High Priority</option>
+            <option value="Medium" selected>Medium Priority</option>
+            <option value="Low">Low Priority</option>
+          </select>
+          <div class="flex justify-end space-x-2">
+            <button
+              type="button"
+              onclick="toggleTaskModal()"
+              class="px-4 py-2 text-gray-600"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-blue-600 text-white rounded"
+            >
+              Create
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <script>
-        // State Management
-        let state = {
-            goals: JSON.parse(localStorage.getItem('agile_goals')) || [],
-            tasks: JSON.parse(localStorage.getItem('agile_tasks')) || [],
-            standups: JSON.parse(localStorage.getItem('agile_standups')) || [],
-            team: ['Alex', 'Jordan', 'Sam', 'Taylor']
+      // State Management
+      let state = {
+        goals: JSON.parse(localStorage.getItem('agile_goals')) || [],
+        tasks: JSON.parse(localStorage.getItem('agile_tasks')) || [],
+        standups: JSON.parse(localStorage.getItem('agile_standups')) || [],
+        team: ['Alex', 'Jordan', 'Sam', 'Taylor'],
+      };
+
+      function saveState() {
+        localStorage.setItem('agile_goals', JSON.stringify(state.goals));
+        localStorage.setItem('agile_tasks', JSON.stringify(state.tasks));
+        localStorage.setItem('agile_standups', JSON.stringify(state.standups));
+        renderAll();
+      }
+
+      // UI Navigation
+      function showSection(sectionId) {
+        document
+          .querySelectorAll('.content-section')
+          .forEach((s) => s.classList.add('hidden'));
+        document
+          .getElementById(`section-${sectionId}`)
+          .classList.remove('hidden');
+
+        document.querySelectorAll('.tab-btn').forEach((b) => {
+          b.classList.remove('active-tab', 'text-blue-500');
+          b.classList.add('text-gray-500');
+        });
+        const activeTab = document.getElementById(`tab-${sectionId}`);
+        activeTab.classList.add('active-tab', 'text-blue-500');
+        activeTab.classList.remove('text-gray-500');
+      }
+
+      // Goal Management
+      document.getElementById('goal-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const newGoal = {
+          id: Date.now(),
+          desc: document.getElementById('goal-desc').value,
+          type: document.getElementById('goal-type').value,
+          priority: document.getElementById('goal-priority').value,
         };
+        state.goals.push(newGoal);
+        e.target.reset();
+        saveState();
+      });
 
-        function saveState() {
-            localStorage.setItem('agile_goals', JSON.stringify(state.goals));
-            localStorage.setItem('agile_tasks', JSON.stringify(state.tasks));
-            localStorage.setItem('agile_standups', JSON.stringify(state.standups));
-            renderAll();
+      function deleteGoal(id) {
+        state.goals = state.goals.filter((g) => g.id !== id);
+        saveState();
+      }
+
+      // Task Management
+      function toggleTaskModal() {
+        const modal = document.getElementById('task-modal');
+        modal.classList.toggle('hidden');
+      }
+
+      document.getElementById('task-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const newTask = {
+          id: Date.now(),
+          title: document.getElementById('task-title').value,
+          owner: document.getElementById('task-owner').value,
+          priority: document.getElementById('task-priority').value,
+          status: 'backlog',
+        };
+        state.tasks.push(newTask);
+        toggleTaskModal();
+        e.target.reset();
+        saveState();
+      });
+
+      function moveTask(id, newStatus) {
+        const task = state.tasks.find((t) => t.id === id);
+        if (task) {
+          task.status = newStatus;
+          saveState();
         }
+      }
 
-        // UI Navigation
-        function showSection(sectionId) {
-            document.querySelectorAll('.content-section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(`section-${sectionId}`).classList.remove('hidden');
-            
-            document.querySelectorAll('.tab-btn').forEach(b => {
-                b.classList.remove('active-tab', 'text-blue-500');
-                b.classList.add('text-gray-500');
-            });
-            const activeTab = document.getElementById(`tab-${sectionId}`);
-            activeTab.classList.add('active-tab', 'text-blue-500');
-            activeTab.classList.remove('text-gray-500');
-        }
-
-        // Goal Management
-        document.getElementById('goal-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const newGoal = {
-                id: Date.now(),
-                desc: document.getElementById('goal-desc').value,
-                type: document.getElementById('goal-type').value,
-                priority: document.getElementById('goal-priority').value
-            };
-            state.goals.push(newGoal);
-            e.target.reset();
-            saveState();
+      // Standup Management
+      document
+        .getElementById('standup-form')
+        .addEventListener('submit', (e) => {
+          e.preventDefault();
+          const entry = {
+            id: Date.now(),
+            name: document.getElementById('su-name').value,
+            yesterday: document.getElementById('su-yesterday').value,
+            today: document.getElementById('su-today').value,
+            blockers: document.getElementById('su-blockers').value || 'None',
+            date: new Date().toLocaleDateString(),
+          };
+          state.standups.unshift(entry);
+          e.target.reset();
+          saveState();
         });
 
-        function deleteGoal(id) {
-            state.goals = state.goals.filter(g => g.id !== id);
-            saveState();
-        }
+      // Rendering Logic
+      function renderAll() {
+        renderDashboard();
+        renderGoals();
+        renderBoard();
+        renderTeam();
+        renderStandups();
+        renderUpdates();
+      }
 
-        // Task Management
-        function toggleTaskModal() {
-            const modal = document.getElementById('task-modal');
-            modal.classList.toggle('hidden');
-        }
+      function renderDashboard() {
+        const total = state.tasks.length;
+        const done = state.tasks.filter((t) => t.status === 'done').length;
+        const percent = total === 0 ? 0 : Math.round((done / total) * 100);
 
-        document.getElementById('task-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const newTask = {
-                id: Date.now(),
-                title: document.getElementById('task-title').value,
-                owner: document.getElementById('task-owner').value,
-                priority: document.getElementById('task-priority').value,
-                status: 'backlog'
-            };
-            state.tasks.push(newTask);
-            toggleTaskModal();
-            e.target.reset();
-            saveState();
-        });
+        document.getElementById('stats-progress').textContent = `${percent}%`;
+        document.getElementById('stats-task-count').textContent =
+          `${done} / ${total} Tasks`;
+        document.getElementById('progress-bar').style.width = `${percent}%`;
+        document.getElementById('stats-goals').textContent = state.goals.length;
 
-        function moveTask(id, newStatus) {
-            const task = state.tasks.find(t => t.id === id);
-            if (task) {
-                task.status = newStatus;
-                saveState();
-            }
-        }
+        const blockers = state.standups.filter(
+          (s) => s.blockers.toLowerCase() !== 'none' && s.blockers.length > 0,
+        ).length;
+        document.getElementById('stats-blockers').textContent = blockers;
 
-        // Standup Management
-        document.getElementById('standup-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const entry = {
-                id: Date.now(),
-                name: document.getElementById('su-name').value,
-                yesterday: document.getElementById('su-yesterday').value,
-                today: document.getElementById('su-today').value,
-                blockers: document.getElementById('su-blockers').value || 'None',
-                date: new Date().toLocaleDateString()
-            };
-            state.standups.unshift(entry);
-            e.target.reset();
-            saveState();
-        });
+        const mainGoal =
+          state.goals.length > 0
+            ? state.goals[0].desc
+            : 'Set your primary goal in the Goals section.';
+        document.getElementById('sprint-goal-display').textContent = mainGoal;
+      }
 
-        // Rendering Logic
-        function renderAll() {
-            renderDashboard();
-            renderGoals();
-            renderBoard();
-            renderTeam();
-            renderStandups();
-            renderUpdates();
-        }
-
-        function renderDashboard() {
-            const total = state.tasks.length;
-            const done = state.tasks.filter(t => t.status === 'done').length;
-            const percent = total === 0 ? 0 : Math.round((done / total) * 100);
-            
-            document.getElementById('stats-progress').textContent = `${percent}%`;
-            document.getElementById('stats-task-count').textContent = `${done} / ${total} Tasks`;
-            document.getElementById('progress-bar').style.width = `${percent}%`;
-            document.getElementById('stats-goals').textContent = state.goals.length;
-            
-            const blockers = state.standups.filter(s => s.blockers.toLowerCase() !== 'none' && s.blockers.length > 0).length;
-            document.getElementById('stats-blockers').textContent = blockers;
-
-            const mainGoal = state.goals.length > 0 ? state.goals[0].desc : "Set your primary goal in the Goals section.";
-            document.getElementById('sprint-goal-display').textContent = mainGoal;
-        }
-
-        function renderGoals() {
-            const list = document.getElementById('goals-list');
-            list.innerHTML = state.goals.map(g => `
+      function renderGoals() {
+        const list = document.getElementById('goals-list');
+        list.innerHTML = state.goals
+          .map(
+            (g) => `
                 <div class="bg-white p-4 rounded-lg shadow-sm flex justify-between items-center priority-${g.priority}">
                     <div>
                         <span class="text-xs font-bold px-2 py-1 rounded bg-gray-100 mr-2">${g.type}</span>
@@ -352,45 +554,60 @@
                     </div>
                     <button onclick="deleteGoal(${g.id})" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
                 </div>
-            `).join('');
-        }
+            `,
+          )
+          .join('');
+      }
 
-        function renderBoard() {
-            const columns = ['backlog', 'inprogress', 'review', 'done'];
-            columns.forEach(status => {
-                const colEl = document.getElementById(`tasks-${status}`);
-                const filtered = state.tasks.filter(t => t.status === status);
-                
-                colEl.innerHTML = filtered.map(t => `
+      function renderBoard() {
+        const columns = ['backlog', 'inprogress', 'review', 'done'];
+        columns.forEach((status) => {
+          const colEl = document.getElementById(`tasks-${status}`);
+          const filtered = state.tasks.filter((t) => t.status === status);
+
+          colEl.innerHTML = filtered
+            .map(
+              (t) => `
                     <div class="bg-white p-3 rounded shadow-sm border-l-4 ${getPriorityClass(t.priority)}">
                         <h4 class="font-bold text-sm">${t.title}</h4>
                         <div class="flex justify-between items-center mt-2">
                             <span class="text-xs text-gray-500"><i class="fas fa-user mr-1"></i>${t.owner}</span>
                             <div class="flex space-x-1">
-                                ${status !== 'backlog' ? `<button onclick="moveTask(${t.id}, '${columns[columns.indexOf(status)-1]}')" class="p-1 text-gray-400 hover:text-blue-500"><i class="fas fa-chevron-left text-xs"></i></button>` : ''}
-                                ${status !== 'done' ? `<button onclick="moveTask(${t.id}, '${columns[columns.indexOf(status)+1]}')" class="p-1 text-gray-400 hover:text-blue-500"><i class="fas fa-chevron-right text-xs"></i></button>` : ''}
+                                ${status !== 'backlog' ? `<button onclick="moveTask(${t.id}, '${columns[columns.indexOf(status) - 1]}')" class="p-1 text-gray-400 hover:text-blue-500"><i class="fas fa-chevron-left text-xs"></i></button>` : ''}
+                                ${status !== 'done' ? `<button onclick="moveTask(${t.id}, '${columns[columns.indexOf(status) + 1]}')" class="p-1 text-gray-400 hover:text-blue-500"><i class="fas fa-chevron-right text-xs"></i></button>` : ''}
                             </div>
                         </div>
                     </div>
-                `).join('');
-            });
-        }
+                `,
+            )
+            .join('');
+        });
+      }
 
-        function getPriorityClass(p) {
-            if (p === 'High') return 'border-red-500';
-            if (p === 'Medium') return 'border-yellow-500';
-            return 'border-green-500';
-        }
+      function getPriorityClass(p) {
+        if (p === 'High') return 'border-red-500';
+        if (p === 'Medium') return 'border-yellow-500';
+        return 'border-green-500';
+      }
 
-        function renderTeam() {
-            const tbody = document.getElementById('team-table-body');
-            tbody.innerHTML = state.team.map(member => {
-                const memberTasks = state.tasks.filter(t => t.owner === member && t.status !== 'done');
-                const taskList = memberTasks.length > 0 
-                    ? memberTasks.map(t => `<span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-1 mb-1">${t.title}</span>`).join('')
-                    : '<span class="text-gray-400 text-xs">No active tasks</span>';
-                
-                return `
+      function renderTeam() {
+        const tbody = document.getElementById('team-table-body');
+        tbody.innerHTML = state.team
+          .map((member) => {
+            const memberTasks = state.tasks.filter(
+              (t) => t.owner === member && t.status !== 'done',
+            );
+            const taskList =
+              memberTasks.length > 0
+                ? memberTasks
+                    .map(
+                      (t) =>
+                        `<span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-1 mb-1">${t.title}</span>`,
+                    )
+                    .join('')
+                : '<span class="text-gray-400 text-xs">No active tasks</span>';
+
+            return `
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">${member}</td>
                         <td class="px-6 py-4">${taskList}</td>
@@ -401,12 +618,15 @@
                         </td>
                     </tr>
                 `;
-            }).join('');
-        }
+          })
+          .join('');
+      }
 
-        function renderStandups() {
-            const list = document.getElementById('standup-list');
-            list.innerHTML = state.standups.map(s => `
+      function renderStandups() {
+        const list = document.getElementById('standup-list');
+        list.innerHTML = state.standups
+          .map(
+            (s) => `
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
                     <div class="flex justify-between items-center mb-3">
                         <span class="font-bold text-blue-600">${s.name}</span>
@@ -418,16 +638,21 @@
                         <p><strong class="text-red-600">Blockers:</strong> ${s.blockers}</p>
                     </div>
                 </div>
-            `).join('');
-        }
+            `,
+          )
+          .join('');
+      }
 
-        function renderUpdates() {
-            const list = document.getElementById('updates-feed');
-            if (state.standups.length === 0) {
-                list.innerHTML = '<div class="bg-white p-8 text-center rounded-xl shadow-sm text-gray-500">No activity updates yet. Submit a standup to see it here!</div>';
-                return;
-            }
-            list.innerHTML = state.standups.map(s => `
+      function renderUpdates() {
+        const list = document.getElementById('updates-feed');
+        if (state.standups.length === 0) {
+          list.innerHTML =
+            '<div class="bg-white p-8 text-center rounded-xl shadow-sm text-gray-500">No activity updates yet. Submit a standup to see it here!</div>';
+          return;
+        }
+        list.innerHTML = state.standups
+          .map(
+            (s) => `
                 <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500 flex justify-between items-start">
                     <div>
                         <div class="flex items-center mb-1">
@@ -438,11 +663,13 @@
                     </div>
                     <span class="text-xs text-gray-400">${s.date}</span>
                 </div>
-            `).join('');
-        }
+            `,
+          )
+          .join('');
+      }
 
-        // Initial Load
-        window.onload = renderAll;
+      // Initial Load
+      window.onload = renderAll;
     </script>
-</body>
+  </body>
 </html>
