@@ -58,21 +58,35 @@ Schema and backend must be designed to facilitate migration between databse setu
 
 ### Tables
 
-**\_meta** - current database version and last update.
+#### _meta
 
-**Users** - persistent user info for login authentication and account management. Modeled to support a soft-to-hard deletion scheme; user can delete their account after which it will be soft-deleted and remain in a read-only state for some amount of time, after which it will be hard-deleted from the database and, to preserve privacy, all activity associated with that account will also be deleted. Accounts may be recovered any time before hard deletion.
+Current database version and last update.
 
-**Sessions** - user authentication sessions, attached to user id, ip address, and user agent. Set to expire after some length of time, requiring new login.
+#### Users
 
-**Teams** - surface-level team info and team management. Teams may be soft-to-hard deleted in the same manner as users and recovered while soft-deleted.
+Persistent user info for login authentication and account management. Modeled to support a soft-to-hard deletion scheme; user can delete their account after which it will be soft-deleted and remain in a read-only state for some amount of time, after which it will be hard-deleted from the database and, to preserve privacy, all activity associated with that account will also be deleted. Accounts may be recovered any time before hard deletion.
 
-**Team Members** - team-level user profiles, similar to Slack/Discord server profiles. User activity may persist on a team after they left and while soft deleted, but will be deleted if the user account is hard deleted.
+#### Sessions 
 
-**Standups** - standups posted per project that include stand ups and blockers. Assuming user will post both at once, if we want to display stand-ups, blockers separately, they can be derived from this table.
+User authentication sessions, attached to user id, ip address, and user agent. Set to expire after some length of time, requiring new login.
+
+#### Teams 
+
+Surface-level team info and team management. Teams may be soft-to-hard deleted in the same manner as users and recovered while soft-deleted.
+
+#### Team Members 
+
+Team-level user profiles, similar to Slack/Discord server profiles. User activity may persist on a team after they left and while soft deleted, but will be deleted if the user account is hard deleted.
+
+---
+
+#### Standups 
+
+Standups posted per project that include stand ups and blockers. Assuming user will post both at once, if we want to display stand-ups, blockers separately, they can be derived from this table.
 
 Shape of a standup entry as produced by `createStandup` in `src/standup.js` and stored by `createStandupStore` in `src/standupStore.js`. Phase 1 keeps everything in memory. Phase 2 will move this into a Supabase Postgres table with the same column names (see ADR-0002).
 
-## Fields
+##### Fields
 
 | Field         | Type   | Description                                                |
 | ------------- | ------ | ---------------------------------------------------------- |
@@ -84,7 +98,7 @@ Shape of a standup entry as produced by `createStandup` in `src/standup.js` and 
 
 All fields are required strings. No validation is enforced at this layer since the form (Issue #10) is expected to handle that on input.
 
-## Example
+##### Example
 
 ```json
 {
@@ -96,7 +110,7 @@ All fields are required strings. No validation is enforced at this layer since t
 }
 ```
 
-## Store API
+##### Store API
 
 The in-memory store at `src/standupStore.js` exposes:
 
@@ -113,7 +127,7 @@ standupStore.add('Kyle', 'closed Issue #11', 'pick up Issue #20', 'none');
 console.log(standupStore.serialize());
 ```
 
-## Phase 2 Migration Notes
+##### Phase 2 Migration Notes
 
 When Supabase comes online, the table can be created as:
 
@@ -126,6 +140,9 @@ create table standups (
   blockers text not null,
   submitted_at timestamptz not null default now()
 );
+```
+
+---
 
 **Projects** - projects associated with a certain team, encompasses several tasks and project members. Can have an optional status and deadline, and may be archived and unarchived or hard-deleted from database. May have a leader assigned to it.
 
