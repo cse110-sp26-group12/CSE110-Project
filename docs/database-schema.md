@@ -58,7 +58,7 @@ Schema and backend must be designed to facilitate migration between databse setu
 
 ### Tables
 
-#### _meta
+#### \_meta
 
 Current database version and last update.
 
