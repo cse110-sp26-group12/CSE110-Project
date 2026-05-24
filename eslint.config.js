@@ -1,13 +1,11 @@
 import js from '@eslint/js';
 
 export default [
-  { 
-    ignores: ['docs/research/**'] 
+  {
+    ignores: ['node_modules/**', 'dist/**', 'coverage/**', 'docs/research/**'],
   },
-
   js.configs.recommended,
   {
-    ignores: ['node_modules/**', 'dist/**', 'coverage/**'],
     files: ['**/*.js'],
     languageOptions: {
       ecmaVersion: 'latest',
