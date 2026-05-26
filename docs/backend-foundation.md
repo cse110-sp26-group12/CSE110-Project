@@ -18,6 +18,8 @@ _[SERVER]_
 
 ## [API HANDLER](../api-handler/)
 
+Direct interaction with the frontend. HTTP parsing and response.
+
 ### Expected from Frontend
 
 - HTTP method and path
@@ -71,6 +73,8 @@ HTTP response
 
 ## [Service Layer](../service-layer/)
 
+Business logic, permission and membership authorization, data compilation and packaging for frontend.
+
 ### Expected from API Handler
 
 Function calls with validated arguments
@@ -113,6 +117,8 @@ Return values in the form of frontend-ready dictionaries and/or exceptions
 ---
 
 ## [Data Repo](../data-repo/)
+
+A load of CRUD.
 
 ### Expected from Service Layer
 
