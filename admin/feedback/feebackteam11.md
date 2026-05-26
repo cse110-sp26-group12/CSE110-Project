@@ -1,5 +1,5 @@
-## Team 11 Review 
-# completed by: Team 12
+# Team 11 Review 
+## completed by: Team 12
 
 **Strength:**
 The branches are well organized. It is clear what each branch is used for and there aren't an unnecessary amount of branches. This is important for maintaining a clear, organized repo and should be continued throughout the remainder of the project.
