@@ -1,11 +1,61 @@
-function createStandup(name, done, todo, blockers) {
-  return {
-    name,
-    done,
-    todo,
-    blockers,
-    submittedAt: new Date().toISOString(),
-  };
+// --- Helper to render a standup card ---
+function renderStandupCard(standup, status) {
+  const card = document.createElement("article");
+  card.classList.add("standup-card");
+
+  // Determine status class if not provided
+  let statusClass = "done";
+  if (status === "In progress") statusClass = "progress";
+  else if (status === "Blocked") statusClass = "blocker";
+
+  card.innerHTML = `
+    <div class="standup-header">
+      <div>
+        <h3 class="person">${standup.name}</h3>
+        <p class="role">Team Member</p>
+      </div>
+      <span class="status ${statusClass}">${status || "On track"}</span>
+    </div>
+
+    <div class="standup-section">
+      <strong>Yesterday</strong>
+      <p>${standup.done}</p>
+    </div>
+
+    <div class="standup-section">
+      <strong>Today</strong>
+      <p>${standup.todo}</p>
+    </div>
+
+    <div class="standup-section">
+      <strong>Blockers</strong>
+      <p>${standup.blockers || "No blockers reported."}</p>
+    </div>
+  `;
+  standupList.prepend(card);
+}
+
+// --- Fetch all standups on load ---
+async function loadStandups() {
+  try {
+    const response = await fetch("/api/standups");
+    if (!response.ok) throw new Error("Failed to load standups");
+    
+    const standups = await response.json();
+    if (standups.length > 0) {
+      emptyState.style.display = "none";
+      standups.forEach(s => renderStandupCard(s));
+      
+      totalSubmissions = standups.length;
+      totalBlockers = standups.filter(s => s.blockers && s.blockers.toLowerCase() !== "none").length;
+      // Note: we'd need 'status' in the backend to accurately count in-progress
+      
+      submittedCount.textContent = totalSubmissions;
+      blockerCount.textContent = totalBlockers;
+    }
+  } catch (error) {
+    console.error("Error loading standups:", error);
+  }
 }
 
 const toggle = document.getElementById("themeToggle");
@@ -25,7 +75,7 @@ toggle.addEventListener("click", () => {
   document.body.classList.toggle("dark");
 });
 
-submitButton.addEventListener("click", () => {
+submitButton.addEventListener("click", async () => {
   const name = document.getElementById("name").value.trim();
   const status = document.getElementById("status").value;
   const yesterday = document.getElementById("yesterday").value.trim();
@@ -37,64 +87,51 @@ submitButton.addEventListener("click", () => {
     return;
   }
 
-  // Convert form input into a standard standup object.
-  // This follows the same structure as the team's createStandup helper.
-  const standup = createStandup(name, yesterday, today, blockers);
+  const payload = {
+    name,
+    done: yesterday,
+    todo: today,
+    blockers: blockers || "none"
+  };
 
-  emptyState.style.display = "none";
+  try {
+    const response = await fetch("/api/standups", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-  let statusClass = "done";
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to submit standup");
+    }
 
-  if (status === "In progress") {
-    statusClass = "progress";
-    totalInProgress++;
-  } else if (status === "Blocked") {
-    statusClass = "blocker";
+    const savedStandup = await response.json();
+    
+    emptyState.style.display = "none";
+    renderStandupCard(savedStandup, status);
+
+    // Update local counters
+    if (status === "In progress") totalInProgress++;
+    if (payload.blockers.toLowerCase() !== "none") totalBlockers++;
+    totalSubmissions++;
+
+    submittedCount.textContent = totalSubmissions;
+    blockerCount.textContent = totalBlockers;
+    progressCount.textContent = totalInProgress;
+
+    // Reset form
+    document.getElementById("name").value = "";
+    document.getElementById("status").value = "On track";
+    document.getElementById("yesterday").value = "";
+    document.getElementById("today").value = "";
+    document.getElementById("blockers").value = "";
+    
+  } catch (error) {
+    console.error("Error submitting standup:", error);
+    alert("Error: " + error.message);
   }
-
-  if (standup.blockers) {
-    totalBlockers++;
-  }
-
-  totalSubmissions++;
-
-  const card = document.createElement("article");
-  card.classList.add("standup-card");
-
-  card.innerHTML = `
-    <div class="standup-header">
-      <div>
-        <h3 class="person">${standup.name}</h3>
-        <p class="role">Team Member</p>
-      </div>
-      <span class="status ${statusClass}">${status}</span>
-    </div>
-
-    <div class="standup-section">
-      <strong>Yesterday</strong>
-      <p>${standup.done}</p>
-    </div>
-
-    <div class="standup-section">
-      <strong>Today</strong>
-      <p>${standup.todo}</p>
-    </div>
-
-    <div class="standup-section">
-      <strong>Blockers</strong>
-      <p>${standup.blockers || "No blockers reported."}</p>
-    </div>
-  `;
-
-  standupList.prepend(card);
-
-  submittedCount.textContent = totalSubmissions;
-  blockerCount.textContent = totalBlockers;
-  progressCount.textContent = totalInProgress;
-
-  document.getElementById("name").value = "";
-  document.getElementById("status").value = "On track";
-  document.getElementById("yesterday").value = "";
-  document.getElementById("today").value = "";
-  document.getElementById("blockers").value = "";
 });
+
+// Load existing data when page opens
+window.addEventListener("DOMContentLoaded", loadStandups);
