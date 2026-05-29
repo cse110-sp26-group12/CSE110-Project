@@ -26,25 +26,25 @@ Database access occurs here only. Pure CRUD operations. Migrating between framew
 
 #### Storage
 
-JSON files, Postgres databases, etc.
+SQLite/Postgres database
 
 ---
 
 ### Technologies/Tools
 
-Uncertain; most likely reading/writing flat JSON files from backend
+Implemented with SQLite, using better-sqlite3
 
 ### Dependencies
 
-Uncertain; most likely none if we go with flat JSON files
+better-sqlite3
 
 ### Authentication/Session Storage Considerations
 
-User sessions will be stored in the **Sessions** table with reference to a user id, ip address, and user agent. Sessions are created on successful login and can be set to expire after some amount of time, which will require that user to log in again.
+User sessions will be stored in the **User Sessions** table with reference to a user id, ip address, and user agent. Sessions are created on successful login and can be set to expire after some amount of time, which will require that user to log in again.
 
 ### Scaling/Extension Considerations
 
-Schema and backend must be designed to facilitate migration between databse setups (i.e. JSON reading -> Postgre).
+Schema and backend must be designed to facilitate migration between database setups (i.e. SQLite -> Postgre).
 
 ---
 
@@ -58,15 +58,11 @@ Schema and backend must be designed to facilitate migration between databse setu
 
 ### Tables
 
-#### \_meta
-
-Current database version and last update.
-
 #### Users
 
 Persistent user info for login authentication and account management. Modeled to support a soft-to-hard deletion scheme; user can delete their account after which it will be soft-deleted and remain in a read-only state for some amount of time, after which it will be hard-deleted from the database and, to preserve privacy, all activity associated with that account will also be deleted. Accounts may be recovered any time before hard deletion.
 
-#### Sessions
+#### User Sessions
 
 User authentication sessions, attached to user id, ip address, and user agent. Set to expire after some length of time, requiring new login.
 
@@ -197,8 +193,6 @@ Based on our "musts":
 - [x] Check-ins (standups + mood)
 - [x] Blockers
 - [x] Cover requests
-- [ ] Meeting scheduler (not sure exactly how this is gonna be done)
-- [ ] Something something AI (if we get to it)
 
 ---
 
