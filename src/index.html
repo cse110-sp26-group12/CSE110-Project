@@ -9,7 +9,10 @@
 <body>
   <nav class="navbar">
     <div class="nav-inner">
-      <div class="brand">SITREP</div>
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">S</span>
+        <span>SitRep</span>
+      </div>
 
       <div class="nav-links" aria-label="Primary navigation">
         <a class="active" href="#standup">Daily StandUp</a>
@@ -19,19 +22,26 @@
         <a href="#archive">Archive</a>
       </div>
 
-      <button class="theme-toggle" id="themeToggle" type="button">
-        Toggle Dark Mode
+      <button
+        class="theme-toggle"
+        id="themeToggle"
+        type="button"
+        aria-pressed="false"
+        aria-label="Toggle dark mode"
+      >
+        <span class="theme-dot" aria-hidden="true"></span>
+        <span class="theme-label">Dark</span>
       </button>
     </div>
   </nav>
 
   <main class="page">
-    <section class="hero">
+    <section class="hero" aria-label="Dashboard overview">
       <div class="hero-card">
-        <p class="eyebrow">Daily StandUp</p>
+        <p class="eyebrow">Team rhythm</p>
         <h1>Daily StandUp Dashboard</h1>
         <p>
-          Submit daily updates, track progress, and identify blockers for the team.
+          A focused space for daily updates, ownership, progress, and blockers.
         </p>
       </div>
 
@@ -57,7 +67,7 @@
       <form class="form-card">
         <div class="section-title">
           <h2>Submit StandUp</h2>
-          <span class="date-pill">Today</span>
+          <span class="date-pill" id="todayPill">Today</span>
         </div>
 
         <div class="field-row">
@@ -100,7 +110,7 @@
       <div class="standups">
         <div class="section-title">
           <h2>Team Updates</h2>
-          <span class="date-pill">Most recent</span>
+          <span class="date-pill">Live feed</span>
         </div>
 
         <div id="emptyState" class="empty-state">
@@ -139,11 +149,6 @@
         This section will store past standup reports for later reference.
       </p>
     </section>
-
-    <p class="footer-note">
-      Designed with a top navbar, warm cream background, ivory cards,
-      terracotta actions, and clear blocker/status indicators.
-    </p>
   </main>
 
   <script src="script.js"></script>
