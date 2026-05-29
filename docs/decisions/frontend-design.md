@@ -11,7 +11,7 @@ Team Board - Have a list of members and their roles (can implement a fake team w
 Task Tab - Have a "create task" button that when clicked results in a popup text field to type in the task name. There is also a submit button to submit the task.
 Blockers Tab - Almost identical to tasks. Have an "add blocker" button that results in a text field popup to type in a blocker with a submit button to submit the blocker.
 **All tabs should be on different pages** make sure the underline at the top of the page moves under the tab the user is on when a new tab is clicked.
-
+**get rid of archives tab**
 # Navigation flow
 
 - Easy to navigate, all features should be easy to locate from any part of the website
