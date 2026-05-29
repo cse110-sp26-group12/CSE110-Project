@@ -3,6 +3,10 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { handleGetStandups, handlePostStandup } from './api-handler/standupHandler.js';
+import { runDatabaseMigrations } from './database/migrate.js';
+
+const dbVersion = runDatabaseMigrations();
+console.log(`Migration complete for database version: ${dbVersion}`)
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
