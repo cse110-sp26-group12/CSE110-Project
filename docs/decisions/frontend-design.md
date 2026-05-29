@@ -7,7 +7,10 @@
 
 Daily StandUp Tab - Contains the sections where members can do a standup report. There are three core questions in the stand up, asking the members what they did yesterday, what they will do today, and identifying any obstacles.
 Through this, submitting standups allows members to update their team members on their progress while addressing their next steps.
-
+Team Board - Have a list of members and their roles (can implement a fake team with list for this) and an add member button.
+Task Tab - Have a "create task" button that when clicked results in a popup text field to type in the task name. There is also a submit button to submit the task.
+Blockers Tab - Almost identical to tasks. Have an "add blocker" button that results in a text field popup to type in a blocker with a submit button to submit the blocker.
+**All tabs should be on different pages** make sure the underline at the top of the page moves under the tab the user is on when a new tab is clicked.
 
 # Navigation flow
 
