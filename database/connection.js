@@ -2,6 +2,11 @@ import Database from 'better-sqlite3';
 import path from 'node:path';
 import fs from 'node:fs';
 
+/**
+ * Creates or accesses an SQLite database at a specified directory
+ * @param {*} dbPath The directory where the database files will be created/accessed
+ * @returns An SQL database at `dbPath`
+ */
 export function createDatabaseConnection(dbPath) {
   fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
@@ -22,6 +27,10 @@ export function createDatabaseConnection(dbPath) {
 
 let dbInstance = null;
 
+/**
+ * Access the current singleton database instance; will create a connection if one does not exist
+ * @returns The current database instance
+ */
 export function getDb() {
   if (!dbInstance) {
     dbInstance = createDatabaseConnection(
