@@ -21,10 +21,12 @@ CREATE TABLE teams (
     invite_code     TEXT    NOT NULL UNIQUE,
     created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
     updated_at      TEXT    NOT NULL DEFAULT (datetime('now')),
-    created_by      INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT, --team owners must resolve their teams (delete or transfer ownership) before account deletion
+    owned_by        INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT, --team owners must resolve their teams (delete or transfer ownership) before account deletion
     deleted_at      TEXT    NULL,                                               --RESTRICT is a last guard but should never actually trigger; enforce the policy for soft-deletion at service level
     kill_after      TEXT    NULL
 );
+
+CREATE INDEX idx_tm_owners ON teams(owned_by);
 
 CREATE TABLE team_members (
     id              INTEGER PRIMARY KEY,
@@ -46,7 +48,7 @@ CREATE TABLE projects (
     id              INTEGER PRIMARY KEY,
     title           TEXT    NOT NULL,
     for_team        INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
-    lead_by         INTEGER NULL REFERENCES team_members(id) ON DELETE NULL,
+    lead_by         INTEGER NULL REFERENCES team_members(id) ON DELETE SET NULL,
     deadline        TEXT    NULL,
     project_status  TEXT    NOT NULL DEFAULT 'active'
                             CHECK (project_status IN ('active', 'completed', 'abandoned')),
