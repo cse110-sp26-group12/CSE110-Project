@@ -8,7 +8,7 @@ describe('runDatabaseMigrations', () => {
     let migrationCleanups = [];
 
     afterEach(() => {
-        for (const db of openDbs) { try { db.close(); } catch {} }
+        for (const db of openDbs) { try { db.close(); } catch { /* Pass */ } }
         for (const p of dbPaths) cleanupDb(p);
         for (const cleanup of migrationCleanups) cleanup();
         openDbs = [];
@@ -44,7 +44,7 @@ describe('runDatabaseMigrations', () => {
 
             expect(finalVersion).toBe(1);
             const tables = db.prepare(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name='foo'"
+                'SELECT name FROM sqlite_master WHERE type=\'table\' AND name=\'foo\''
             ).all();
             expect(tables).toHaveLength(1);
         });
@@ -70,7 +70,7 @@ describe('runDatabaseMigrations', () => {
 
             expect(finalVersion).toBe(3);
             const tableNames = db.prepare(
-                "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+                'SELECT name FROM sqlite_master WHERE type=\'table\' ORDER BY name'
             ).all().map(r => r.name);
             expect(tableNames).toEqual(['bar', 'baz', 'foo']);
         });
@@ -78,9 +78,9 @@ describe('runDatabaseMigrations', () => {
         it('applies migrations in numeric order regardless of filesystem order', () => {
             const db = freshDb();
             const dir = makeMigrations({
-                '003_third.sql':  `CREATE TABLE c (id INTEGER); PRAGMA user_version = 3;`,
-                '001_first.sql':  `CREATE TABLE a (id INTEGER); PRAGMA user_version = 1;`,
-                '002_second.sql': `CREATE TABLE b (id INTEGER); PRAGMA user_version = 2;`,
+                '003_third.sql':  'CREATE TABLE c (id INTEGER); PRAGMA user_version = 3;',
+                '001_first.sql':  'CREATE TABLE a (id INTEGER); PRAGMA user_version = 1;',
+                '002_second.sql': 'CREATE TABLE b (id INTEGER); PRAGMA user_version = 2;',
             });
 
             const finalVersion = runDatabaseMigrations({ db, migrationsDir: dir });
@@ -98,10 +98,10 @@ describe('runDatabaseMigrations', () => {
         it('ignores files that do not match the migration naming pattern', () => {
             const db = freshDb();
             const dir = makeMigrations({
-                '001_initial.sql': `CREATE TABLE foo (id INTEGER); PRAGMA user_version = 1;`,
-                'README.md':       `# notes`,
-                'helper.sql':      `SELECT 1;`,
-                'notes.txt':       `roblox`,
+                '001_initial.sql': 'CREATE TABLE foo (id INTEGER); PRAGMA user_version = 1;',
+                'README.md':       '# notes',
+                'helper.sql':      'SELECT 1;',
+                'notes.txt':       'roblox',
             });
 
             const finalVersion = runDatabaseMigrations({ db, migrationsDir: dir });
@@ -128,23 +128,23 @@ describe('runDatabaseMigrations', () => {
         it('only applies new migrations when version already partially advanced', () => {
             const db = freshDb();
             const dir = makeMigrations({
-                '001_initial.sql': `CREATE TABLE a (id INTEGER); PRAGMA user_version = 1;`,
-                '002_add_b.sql':   `CREATE TABLE b (id INTEGER); PRAGMA user_version = 2;`,
+                '001_initial.sql': 'CREATE TABLE a (id INTEGER); PRAGMA user_version = 1;',
+                '002_add_b.sql':   'CREATE TABLE b (id INTEGER); PRAGMA user_version = 2;',
             });
 
             runDatabaseMigrations({ db, migrationsDir: dir });
             expect(db.pragma('user_version', { simple: true })).toBe(2);
 
             const dir2 = makeMigrations({
-                '001_initial.sql': `CREATE TABLE a (id INTEGER); PRAGMA user_version = 1;`,
-                '002_add_b.sql':   `CREATE TABLE b (id INTEGER); PRAGMA user_version = 2;`,
-                '003_add_c.sql':   `CREATE TABLE c (id INTEGER); PRAGMA user_version = 3;`,
+                '001_initial.sql': 'CREATE TABLE a (id INTEGER); PRAGMA user_version = 1;',
+                '002_add_b.sql':   'CREATE TABLE b (id INTEGER); PRAGMA user_version = 2;',
+                '003_add_c.sql':   'CREATE TABLE c (id INTEGER); PRAGMA user_version = 3;',
             });
 
             const finalVersion = runDatabaseMigrations({ db, migrationsDir: dir2 });
             expect(finalVersion).toBe(3);
             const tables = db.prepare(
-                "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+                'SELECT name FROM sqlite_master WHERE type=\'table\' ORDER BY name'
             ).all().map(r => r.name);
             expect(tables).toEqual(['a', 'b', 'c']);
         });
@@ -170,7 +170,7 @@ describe('runDatabaseMigrations', () => {
         it('includes the SQLite error code in the thrown message', () => {
             const db = freshDb();
             const dir = makeMigrations({
-                '001_broken.sql': `THIS IS NOT VALID SQL;`,
+                '001_broken.sql': 'THIS IS NOT VALID SQL;',
             });
 
             expect(() => runDatabaseMigrations({ db, migrationsDir: dir }))
@@ -190,7 +190,7 @@ describe('runDatabaseMigrations', () => {
             expect(() => runDatabaseMigrations({ db, migrationsDir: dir })).toThrow();
 
             const tables = db.prepare(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('good', 'bad')"
+                'SELECT name FROM sqlite_master WHERE type=\'table\' AND name IN (\'good\', \'bad\')'
             ).all();
             expect(tables).toEqual([]);
 
@@ -226,16 +226,16 @@ describe('runDatabaseMigrations', () => {
         it('stops applying further migrations after one fails', () => {
             const db = freshDb();
             const dir = makeMigrations({
-                '001_good.sql':   `CREATE TABLE a (id INTEGER); PRAGMA user_version = 1;`,
-                '002_broken.sql': `THIS IS BROKEN;`,
-                '003_good.sql':   `CREATE TABLE c (id INTEGER); PRAGMA user_version = 3;`,
+                '001_good.sql':   'CREATE TABLE a (id INTEGER); PRAGMA user_version = 1;',
+                '002_broken.sql': 'THIS IS BROKEN;',
+                '003_good.sql':   'CREATE TABLE c (id INTEGER); PRAGMA user_version = 3;',
             });
 
             expect(() => runDatabaseMigrations({ db, migrationsDir: dir })).toThrow();
 
             expect(db.pragma('user_version', { simple: true })).toBe(1);
             const cExists = db.prepare(
-                "SELECT name FROM sqlite_master WHERE name='c'"
+                'SELECT name FROM sqlite_master WHERE name=\'c\''
             ).get();
             expect(cExists).toBeUndefined();
         });
@@ -249,7 +249,7 @@ describe('runDatabaseMigrations', () => {
             expect(finalVersion).toBe(1);
 
             const tables = db.prepare(
-                "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+                'SELECT name FROM sqlite_master WHERE type=\'table\' ORDER BY name'
             ).all().map(r => r.name);
 
             expect(tables).toEqual(expect.arrayContaining([
@@ -267,7 +267,7 @@ describe('runDatabaseMigrations', () => {
             runDatabaseMigrations({ db });
 
             const indexes = db.prepare(
-                "SELECT name FROM sqlite_master WHERE type='index' AND name NOT LIKE 'sqlite_%'"
+                'SELECT name FROM sqlite_master WHERE type=\'index\' AND name NOT LIKE \'sqlite_%\''
             ).all().map(r => r.name);
 
             expect(indexes).toEqual(expect.arrayContaining([

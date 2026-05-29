@@ -9,7 +9,7 @@ describe('createDatabaseConnection', () => {
 
     afterEach(() => {
         for (const db of openDbs) {
-            try { db.close(); } catch {}
+            try { db.close(); } catch { /* Pass */ }
         }
         for (const p of dbPaths) {
             cleanupDb(p);

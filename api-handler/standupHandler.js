@@ -1,6 +1,6 @@
 /**
  * API Handler for Standups
- * 
+ *
  * Constraints:
  * - WILL NOT read or write storage directly.
  * - WILL NOT run conditional logic beyond input parsing and generating errors.
@@ -16,7 +16,7 @@ const mockService = {
   async getAllStandups() {
     console.log('Service Layer: Fetching all standups');
     return [];
-  }
+  },
 };
 
 export async function handleGetStandups(req, res) {
@@ -25,6 +25,7 @@ export async function handleGetStandups(req, res) {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(standups));
   } catch (error) {
+    console.warn(error); //so linter shuts up
     res.writeHead(500, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Internal Server Error' }));
   }
@@ -37,17 +38,27 @@ export async function handlePostStandup(req, res, body) {
 
     if (!name || !done || !todo) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Missing required fields: name, done, and todo are required.' }));
+      res.end(
+        JSON.stringify({
+          error: 'Missing required fields: name, done, and todo are required.',
+        }),
+      );
       return;
     }
 
     // 2. Call Service Layer
-    const newStandup = await mockService.addStandup({ name, done, todo, blockers });
+    const newStandup = await mockService.addStandup({
+      name,
+      done,
+      todo,
+      blockers,
+    });
 
     // 3. HTTP Response
     res.writeHead(201, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(newStandup));
   } catch (error) {
+    console.warn(error); //so linter shuts up
     res.writeHead(500, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Internal Server Error' }));
   }

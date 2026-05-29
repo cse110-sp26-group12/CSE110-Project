@@ -9,37 +9,42 @@ const DEFAULT_MIGRATIONS_DIR = path.resolve('./database/migrations');
  * @param {*} db_migrationsDir {[database connection method], [directory for schema migrations]}
  * @returns The current schema user_version
  */
-export function runDatabaseMigrations({db = getDb(), migrationsDir = DEFAULT_MIGRATIONS_DIR, } = {}) {
-    const currentVersion = db.pragma('user_version', { simple: true });
+export function runDatabaseMigrations({
+  db = getDb(),
+  migrationsDir = DEFAULT_MIGRATIONS_DIR,
+} = {}) {
+  const currentVersion = db.pragma('user_version', { simple: true });
 
-    const files = fs.readdirSync(migrationsDir)
-        .filter(f => /^\d+_.+\.sql$/.test(f)) //Regex language: [digits]_[name].sql
-        .sort();
+  const files = fs
+    .readdirSync(migrationsDir)
+    .filter((f) => /^\d+_.+\.sql$/.test(f)) //Regex language: [digits]_[name].sql
+    .sort();
 
-    for (const file of files) {
-        const targetVersion = parseInt(file.match(/^(\d+)_/)[1], 10); //Catches digits at start of filename
-        if (targetVersion <= currentVersion) continue;
+  for (const file of files) {
+    const targetVersion = parseInt(file.match(/^(\d+)_/)[1], 10); //Catches digits at start of filename
+    if (targetVersion <= currentVersion) continue;
 
-        const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
+    const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
 
-        const apply = db.transaction(() => {
-            try {
-                db.exec(sql);
-            } catch (err) {
-                throw new Error(
-                    `Migration failed in ${file}: ${err.message} (${err.code})`
-                );
-            }
-            const newVersion = db.pragma('user_version', { simple: true });
-            if (newVersion !== targetVersion) {
-                throw new Error(
-                    `Migration ${file} did not set user_version to ${targetVersion} (got ${newVersion})`
-                );
-            }
-        });
+    const apply = db.transaction(() => {
+      try {
+        db.exec(sql);
+      } catch (err) {
+        throw new Error(
+          `Migration failed in ${file}: ${err.message} (${err.code})`,
+          { cause: err },
+        );
+      }
+      const newVersion = db.pragma('user_version', { simple: true });
+      if (newVersion !== targetVersion) {
+        throw new Error(
+          `Migration ${file} did not set user_version to ${targetVersion} (got ${newVersion})`,
+        );
+      }
+    });
 
-        apply();
-    }
+    apply();
+  }
 
-    return db.pragma('user_version', { simple: true });
+  return db.pragma('user_version', { simple: true });
 }

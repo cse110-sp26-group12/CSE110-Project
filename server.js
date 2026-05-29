@@ -2,11 +2,14 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { handleGetStandups, handlePostStandup } from './api-handler/standupHandler.js';
+import {
+  handleGetStandups,
+  handlePostStandup,
+} from './api-handler/standupHandler.js';
 import { runDatabaseMigrations } from './database/migrate.js';
 
 const dbVersion = runDatabaseMigrations();
-console.log(`Migration complete for database version: ${dbVersion}`)
+console.log(`Migration complete for database version: ${dbVersion}`);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,12 +27,15 @@ const server = http.createServer(async (req, res) => {
 
   if (url === '/api/standups' && method === 'POST') {
     let body = '';
-    req.on('data', chunk => { body += chunk.toString(); });
+    req.on('data', (chunk) => {
+      body += chunk.toString();
+    });
     req.on('end', async () => {
       try {
         const parsedBody = JSON.parse(body);
         await handlePostStandup(req, res, parsedBody);
-      } catch (e) {
+      } catch (err) {
+        console.warn('Failed to parse request body:', err.message); //so linter shuts up
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Invalid JSON' }));
       }
@@ -37,17 +43,27 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // --- Static File Serving (from /src) --- NOTE: this is 
+  // --- Static File Serving (from /src) --- NOTE: this is
   let filePath = path.join(__dirname, 'src', url === '/' ? 'index.html' : url);
   const extname = path.extname(filePath);
   let contentType = 'text/html';
 
   switch (extname) {
-    case '.js': contentType = 'text/javascript'; break;
-    case '.css': contentType = 'text/css'; break;
-    case '.json': contentType = 'application/json'; break;
-    case '.png': contentType = 'image/png'; break;
-    case '.jpg': contentType = 'image/jpg'; break;
+    case '.js':
+      contentType = 'text/javascript';
+      break;
+    case '.css':
+      contentType = 'text/css';
+      break;
+    case '.json':
+      contentType = 'application/json';
+      break;
+    case '.png':
+      contentType = 'image/png';
+      break;
+    case '.jpg':
+      contentType = 'image/jpg';
+      break;
   }
 
   fs.readFile(filePath, (error, content) => {

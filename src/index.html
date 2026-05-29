@@ -1,151 +1,150 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SitRep Daily StandUp</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <nav class="navbar">
-    <div class="nav-inner">
-      <div class="brand">SITREP</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SitRep Daily StandUp</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="nav-inner">
+        <div class="brand">SITREP</div>
 
-      <div class="nav-links" aria-label="Primary navigation">
-        <a class="active" href="#standup">Daily StandUp</a>
-        <a href="#team-board">Team Board</a>
-        <a href="#tasks">Tasks</a>
-        <a href="#blockers">Blockers</a>
-        <a href="#archive">Archive</a>
+        <div class="nav-links" aria-label="Primary navigation">
+          <a class="active" href="#standup">Daily StandUp</a>
+          <a href="#team-board">Team Board</a>
+          <a href="#tasks">Tasks</a>
+          <a href="#blockers">Blockers</a>
+          <a href="#archive">Archive</a>
+        </div>
+
+        <button class="theme-toggle" id="themeToggle" type="button">
+          Toggle Dark Mode
+        </button>
       </div>
+    </nav>
 
-      <button class="theme-toggle" id="themeToggle" type="button">
-        Toggle Dark Mode
-      </button>
-    </div>
-  </nav>
+    <main class="page">
+      <section class="hero">
+        <div class="hero-card">
+          <p class="eyebrow">Daily StandUp</p>
+          <h1>Daily StandUp Dashboard</h1>
+          <p>
+            Submit daily updates, track progress, and identify blockers for the
+            team.
+          </p>
+        </div>
 
-  <main class="page">
-    <section class="hero">
-      <div class="hero-card">
-        <p class="eyebrow">Daily StandUp</p>
-        <h1>Daily StandUp Dashboard</h1>
+        <aside class="summary-card" aria-label="Daily summary">
+          <div class="metric">
+            <span>Submitted today</span>
+            <strong id="submittedCount">0</strong>
+          </div>
+
+          <div class="metric">
+            <span>Active blockers</span>
+            <strong id="blockerCount">0</strong>
+          </div>
+
+          <div class="metric">
+            <span>Tasks in progress</span>
+            <strong id="progressCount">0</strong>
+          </div>
+        </aside>
+      </section>
+
+      <section id="standup" class="layout">
+        <form class="form-card">
+          <div class="section-title">
+            <h2>Submit StandUp</h2>
+            <span class="date-pill">Today</span>
+          </div>
+
+          <div class="field-row">
+            <div>
+              <label for="name">Name</label>
+              <input id="name" type="text" placeholder="Your name" />
+            </div>
+
+            <div>
+              <label for="status">Status</label>
+              <select id="status">
+                <option>On track</option>
+                <option>In progress</option>
+                <option>Blocked</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="yesterday">What did you do yesterday?</label>
+          <textarea
+            id="yesterday"
+            placeholder="Example: Finished the navbar layout and reviewed the form design."
+          ></textarea>
+
+          <label for="today">What will you do today?</label>
+          <textarea
+            id="today"
+            placeholder="Example: Connect the standup form to local storage and polish mobile layout."
+          ></textarea>
+
+          <label for="blockers">Any blockers?</label>
+          <textarea
+            id="blockers"
+            placeholder="Example: Waiting on final color approval or API decision."
+          ></textarea>
+
+          <button class="submit-btn" type="button">Submit StandUp</button>
+        </form>
+
+        <div class="standups">
+          <div class="section-title">
+            <h2>Team Updates</h2>
+            <span class="date-pill">Most recent</span>
+          </div>
+
+          <div id="emptyState" class="empty-state">
+            <p>No standup updates yet.</p>
+            <span>Submitted updates will appear here.</span>
+          </div>
+
+          <div id="standupList" class="standup-list"></div>
+        </div>
+      </section>
+
+      <section id="team-board" class="placeholder-section">
+        <h2>Team Board</h2>
         <p>
-          Submit daily updates, track progress, and identify blockers for the team.
+          This section will show team members, roles, and current project
+          ownership.
         </p>
-      </div>
+      </section>
 
-      <aside class="summary-card" aria-label="Daily summary">
-        <div class="metric">
-          <span>Submitted today</span>
-          <strong id="submittedCount">0</strong>
-        </div>
+      <section id="tasks" class="placeholder-section">
+        <h2>Tasks</h2>
+        <p>
+          This section will track assigned tasks, task status, and sprint
+          progress.
+        </p>
+      </section>
 
-        <div class="metric">
-          <span>Active blockers</span>
-          <strong id="blockerCount">0</strong>
-        </div>
+      <section id="blockers" class="placeholder-section">
+        <h2>Blockers</h2>
+        <p>This section will highlight blockers that need team attention.</p>
+      </section>
 
-        <div class="metric">
-          <span>Tasks in progress</span>
-          <strong id="progressCount">0</strong>
-        </div>
-      </aside>
-    </section>
+      <section id="archive" class="placeholder-section">
+        <h2>Archive</h2>
+        <p>This section will store past standup reports for later reference.</p>
+      </section>
 
-    <section id="standup" class="layout">
-      <form class="form-card">
-        <div class="section-title">
-          <h2>Submit StandUp</h2>
-          <span class="date-pill">Today</span>
-        </div>
-
-        <div class="field-row">
-          <div>
-            <label for="name">Name</label>
-            <input id="name" type="text" placeholder="Your name" />
-          </div>
-
-          <div>
-            <label for="status">Status</label>
-            <select id="status">
-              <option>On track</option>
-              <option>In progress</option>
-              <option>Blocked</option>
-            </select>
-          </div>
-        </div>
-
-        <label for="yesterday">What did you do yesterday?</label>
-        <textarea
-          id="yesterday"
-          placeholder="Example: Finished the navbar layout and reviewed the form design."
-        ></textarea>
-
-        <label for="today">What will you do today?</label>
-        <textarea
-          id="today"
-          placeholder="Example: Connect the standup form to local storage and polish mobile layout."
-        ></textarea>
-
-        <label for="blockers">Any blockers?</label>
-        <textarea
-          id="blockers"
-          placeholder="Example: Waiting on final color approval or API decision."
-        ></textarea>
-
-        <button class="submit-btn" type="button">Submit StandUp</button>
-      </form>
-
-      <div class="standups">
-        <div class="section-title">
-          <h2>Team Updates</h2>
-          <span class="date-pill">Most recent</span>
-        </div>
-
-        <div id="emptyState" class="empty-state">
-          <p>No standup updates yet.</p>
-          <span>Submitted updates will appear here.</span>
-        </div>
-
-        <div id="standupList" class="standup-list"></div>
-      </div>
-    </section>
-
-    <section id="team-board" class="placeholder-section">
-      <h2>Team Board</h2>
-      <p>
-        This section will show team members, roles, and current project ownership.
+      <p class="footer-note">
+        Designed with a top navbar, warm cream background, ivory cards,
+        terracotta actions, and clear blocker/status indicators.
       </p>
-    </section>
+    </main>
 
-    <section id="tasks" class="placeholder-section">
-      <h2>Tasks</h2>
-      <p>
-        This section will track assigned tasks, task status, and sprint progress.
-      </p>
-    </section>
-
-    <section id="blockers" class="placeholder-section">
-      <h2>Blockers</h2>
-      <p>
-        This section will highlight blockers that need team attention.
-      </p>
-    </section>
-
-    <section id="archive" class="placeholder-section">
-      <h2>Archive</h2>
-      <p>
-        This section will store past standup reports for later reference.
-      </p>
-    </section>
-
-    <p class="footer-note">
-      Designed with a top navbar, warm cream background, ivory cards,
-      terracotta actions, and clear blocker/status indicators.
-    </p>
-  </main>
-
-  <script src="script.js"></script>
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>
