@@ -16,23 +16,14 @@ const emptyState = document.getElementById("emptyState");
 const submittedCount = document.getElementById("submittedCount");
 const blockerCount = document.getElementById("blockerCount");
 const progressCount = document.getElementById("progressCount");
-const todayPill = document.getElementById("todayPill");
-const themeLabel = document.querySelector(".theme-label");
 
 let totalSubmissions = 0;
 let totalBlockers = 0;
 let totalInProgress = 0;
 
 toggle.addEventListener("click", () => {
-  const isDark = document.body.classList.toggle("dark");
-  toggle.setAttribute("aria-pressed", String(isDark));
-  themeLabel.textContent = isDark ? "Light" : "Dark";
+  document.body.classList.toggle("dark");
 });
-
-todayPill.textContent = new Intl.DateTimeFormat("en", {
-  month: "short",
-  day: "numeric",
-}).format(new Date());
 
 submitButton.addEventListener("click", () => {
   const name = document.getElementById("name").value.trim();
