@@ -40,6 +40,43 @@ export function getDb() {
   return dbInstance;
 }
 
+/**
+ * ### Do not use in production.
+ * Replace the current singleton with a specific database instance. **Intended for tests**, which inject 
+ * an isolated temp-file connection so the repositories' getDb() calls resolve to the test database 
+ * instead of the real one. Closes any existing instance first to avoid leaking handles.
+ * @param {Database} db An open database instance
+ * @returns The injected instance
+ */
+export function setDb(db) {
+  if (dbInstance && dbInstance !== db) {
+    try {
+      dbInstance.close();
+    } catch {
+      /* already closed */
+    }
+  }
+  dbInstance = db;
+  return dbInstance;
+}
+
+/**
+ * ### Do not use in production.
+ * Close and clear the current singleton. The next getDb() call will create a fresh connection from 
+ * DATABASE_PATH. **Intended between tests** so each test starts from a clean slate. Safe to call 
+ * when no instance exists.
+ */
+export function resetDb() {
+  if (dbInstance) {
+    try {
+      dbInstance.close();
+    } catch {
+      /* already closed */
+    }
+    dbInstance = null;
+  }
+}
+
 process.on('exit', () => dbInstance?.close());
 process.on('SIGINT', () => {
   dbInstance?.close();

@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { createDatabaseConnection } from '../database/connection.js';
-import { tempDbPath, tempDbPathInNewDir, cleanupDb } from '../__test-helpers__/tempDb.js';
+import { createDatabaseConnection } from '../../database/connection.js';
+import { tempDbPath, tempDbPathInNewDir, cleanupDb } from '../../__test-helpers__/tempDb.js';
 
 describe('createDatabaseConnection', () => {
     let openDbs = [];

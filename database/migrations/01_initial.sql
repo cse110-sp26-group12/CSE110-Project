@@ -6,8 +6,8 @@ CREATE TABLE users (
     user_name       TEXT    NOT NULL UNIQUE COLLATE NOCASE,
     user_email      TEXT    NOT NULL UNIQUE COLLATE NOCASE,
     pass_hash       TEXT    NOT NULL,
-    created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
-    updated_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+    created_at      TEXT    NOT NULL,
+    updated_at      TEXT    NOT NULL,
     deleted_at      TEXT    NULL,
     kill_after      TEXT    NULL
 );
@@ -18,8 +18,8 @@ CREATE TABLE teams (
     id              INTEGER PRIMARY KEY,
     team_name       TEXT    NOT NULL,
     invite_code     TEXT    NOT NULL UNIQUE,
-    created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
-    updated_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+    created_at      TEXT    NOT NULL,
+    updated_at      TEXT    NOT NULL,
     owned_by        INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT, --team owners must resolve their teams (delete or transfer ownership) before account deletion
     deleted_at      TEXT    NULL,                                               --RESTRICT is a last guard but should never actually trigger; enforce the policy for soft-deletion at service level
     kill_after      TEXT    NULL,
@@ -35,8 +35,8 @@ CREATE TABLE team_members (
     display_name    TEXT    NOT NULL,
     member_role     TEXT    NOT NULL DEFAULT 'member'
                             CHECK (member_role IN ('admin', 'member')),
-    joined_at       TEXT    NOT NULL DEFAULT (datetime('now')),
-    updated_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+    joined_at       TEXT    NOT NULL,
+    updated_at      TEXT    NOT NULL,
     left_at         TEXT    NULL,
     UNIQUE (user_id, team_id)
 );
@@ -50,8 +50,8 @@ CREATE TABLE standups (
     worked_on       TEXT    NULL,
     will_work_on    TEXT    NULL,
     blocked_by      TEXT    NULL,
-    created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
-    updated_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+    created_at      TEXT    NOT NULL,
+    updated_at      TEXT    NOT NULL,
     kill_after      TEXT    NULL
 );
 
@@ -62,7 +62,7 @@ CREATE TABLE user_sessions (
     id              INTEGER PRIMARY KEY,
     token           TEXT    NOT NULL UNIQUE,
     user_id         INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+    created_at      TEXT    NOT NULL,
     expires_at      TEXT    NOT NULL,
     user_agent      TEXT    NULL,
     ip_address      TEXT    NULL,

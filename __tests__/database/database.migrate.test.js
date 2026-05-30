@@ -1,6 +1,6 @@
-import { createDatabaseConnection } from '../database/connection.js';
-import { runDatabaseMigrations } from '../database/migrate.js';
-import { tempDbPath, cleanupDb, createTempMigrationsDir } from '../__test-helpers__/tempDb.js';
+import { createDatabaseConnection } from '../../database/connection.js';
+import { runDatabaseMigrations } from '../../database/migrate.js';
+import { tempDbPath, cleanupDb, createTempMigrationsDir } from '../../__test-helpers__/tempDb.js';
 
 describe('runDatabaseMigrations', () => {
     let openDbs = [];
@@ -285,13 +285,13 @@ describe('runDatabaseMigrations', () => {
             runDatabaseMigrations({ db });
 
             db.prepare(
-                'INSERT INTO users (user_name, user_email, pass_hash) VALUES (?, ?, ?)'
-            ).run('alice', 'alice@example.com', 'hash1');
+                'INSERT INTO users (user_name, user_email, pass_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?)'
+            ).run('alice', 'alice@example.com', 'hash1', '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z');
 
             expect(() => {
                 db.prepare(
-                    'INSERT INTO users (user_name, user_email, pass_hash) VALUES (?, ?, ?)'
-                ).run('bob', 'ALICE@example.com', 'hash2');
+                    'INSERT INTO users (user_name, user_email, pass_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?)'
+                ).run('bob', 'ALICE@example.com', 'hash2', '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z');
             }).toThrow(/UNIQUE/);
         });
 
@@ -301,8 +301,8 @@ describe('runDatabaseMigrations', () => {
 
             expect(() => {
                 db.prepare(
-                    'INSERT INTO team_members (user_id, team_id, display_name) VALUES (?, ?, ?)'
-                ).run(999, 999, 'Ghost');
+                    'INSERT INTO team_members (user_id, team_id, display_name, joined_at, updated_at) VALUES (?, ?, ?, ?, ?)'
+                ).run(999, 999, 'Ghost', '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z');
             }).toThrow(/FOREIGN KEY/i);
         });
 
@@ -311,17 +311,17 @@ describe('runDatabaseMigrations', () => {
             runDatabaseMigrations({ db });
 
             const userId = db.prepare(
-                'INSERT INTO users (user_name, user_email, pass_hash) VALUES (?, ?, ?)'
-            ).run('alice', 'alice@example.com', 'hash').lastInsertRowid;
+                'INSERT INTO users (user_name, user_email, pass_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?)'
+            ).run('alice', 'alice@example.com', 'hash', '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z').lastInsertRowid;
 
             const teamId = db.prepare(
-                'INSERT INTO teams (team_name, invite_code, owned_by) VALUES (?, ?, ?)'
-            ).run('Alpha', 'invite123', userId).lastInsertRowid;
+                'INSERT INTO teams (team_name, invite_code, owned_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?)'
+            ).run('Alpha', 'invite123', userId, '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z').lastInsertRowid;
 
             expect(() => {
                 db.prepare(
-                    'INSERT INTO team_members (user_id, team_id, display_name, member_role) VALUES (?, ?, ?, ?)'
-                ).run(userId, teamId, 'Alice', 'superuser');
+                    'INSERT INTO team_members (user_id, team_id, display_name, member_role, joined_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
+                ).run(userId, teamId, 'Alice', 'superuser', '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z');
             }).toThrow(/CHECK/);
         });
 
@@ -330,20 +330,20 @@ describe('runDatabaseMigrations', () => {
             runDatabaseMigrations({ db });
 
             const userId = db.prepare(
-                'INSERT INTO users (user_name, user_email, pass_hash) VALUES (?, ?, ?)'
-            ).run('alice', 'alice@example.com', 'hash').lastInsertRowid;
+                'INSERT INTO users (user_name, user_email, pass_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?)'
+            ).run('alice', 'alice@example.com', 'hash', '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z').lastInsertRowid;
 
             const ownerId = db.prepare(
-                'INSERT INTO users (user_name, user_email, pass_hash) VALUES (?, ?, ?)'
-            ).run('owner', 'owner@example.com', 'hash').lastInsertRowid;
+                'INSERT INTO users (user_name, user_email, pass_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?)'
+            ).run('owner', 'owner@example.com', 'hash', '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z').lastInsertRowid;
 
             const teamId = db.prepare(
-                'INSERT INTO teams (team_name, invite_code, owned_by) VALUES (?, ?, ?)'
-            ).run('Alpha', 'invite123', ownerId).lastInsertRowid;
-
+                'INSERT INTO teams (team_name, invite_code, owned_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?)'
+            ).run('Alpha', 'invite123', ownerId, '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z').lastInsertRowid;
+            
             db.prepare(
-                'INSERT INTO team_members (user_id, team_id, display_name) VALUES (?, ?, ?)'
-            ).run(userId, teamId, 'Alice');
+                'INSERT INTO team_members (user_id, team_id, display_name, joined_at, updated_at) VALUES (?, ?, ?, ?, ?)'
+            ).run(userId, teamId, 'Alice', '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z');
 
             db.prepare('DELETE FROM users WHERE id = ?').run(userId);
 
