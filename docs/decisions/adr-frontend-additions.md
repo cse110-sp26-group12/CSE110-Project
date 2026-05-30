@@ -41,4 +41,4 @@ Chosen option: "Implement basic UI and create an API for the backend to handle d
 
 ## More Information
 
-All design information for the Team Board, Task, and Blockers tabs of the product can be found under '[Descriptions of all planned pages/tabs](https://github.com/cse110-sp26-group12/CSE110-Project/blob/implement/frontend-foundation/docs/decisions/adr-frontend-foundation.md)' in frontend-design.md. 
+All design information for the Team Board, Task, and Blockers tabs of the product can be found under '[Descriptions of all planned pages/tabs](https://github.com/cse110-sp26-group12/CSE110-Project/blob/implement/frontend-foundation/docs/decisions/frontend-design.md#descriptions-of-all-planned-pagestabs)' in frontend-design.md. 
