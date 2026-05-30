@@ -270,14 +270,11 @@ describe('runDatabaseMigrations', () => {
             ).all().map(r => r.name);
 
             expect(indexes).toEqual(expect.arrayContaining([
-                'idx_users_email',
                 'idx_users_kill_after',
                 'idx_tm_owners',
-                'idx_tm_memberships_user',
                 'idx_tm_memberships_team',
                 'idx_standups_team',
                 'idx_standups_kill_after',
-                'idx_sessions_token',
                 'idx_sessions_user',
                 'idx_sessions_expires'
             ]));

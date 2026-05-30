@@ -12,7 +12,6 @@ CREATE TABLE users (
     kill_after      TEXT    NULL
 );
 
-CREATE INDEX idx_users_email ON users(user_email);
 CREATE INDEX idx_users_kill_after ON users(kill_after) WHERE kill_after IS NOT NULL;
 
 CREATE TABLE teams (
@@ -42,7 +41,6 @@ CREATE TABLE team_members (
     UNIQUE (user_id, team_id)
 );
 
-CREATE INDEX idx_tm_memberships_user ON team_members(user_id);
 CREATE INDEX idx_tm_memberships_team ON team_members(team_id);
 
 CREATE TABLE standups (
@@ -71,7 +69,6 @@ CREATE TABLE user_sessions (
     revoked_at      TEXT    NULL
 );
 
-CREATE INDEX idx_sessions_token ON user_sessions(token) WHERE revoked_at IS NULL;
 CREATE INDEX idx_sessions_user ON user_sessions(user_id);
 CREATE INDEX idx_sessions_expires ON user_sessions(expires_at) WHERE revoked_at IS NULL;
 
