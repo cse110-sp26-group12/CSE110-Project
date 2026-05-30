@@ -1,5 +1,5 @@
 --First schema model includes everything we should have at minimum to have a functioning service
-    --(standups expect to be attached to a team member and project, which then expect a team and a user, which further expects a session)
+    --(standups expect to be associated with a team member and team; a team member expects a user; a user expects a user session)
 
 CREATE TABLE users (
     id              INTEGER PRIMARY KEY,
@@ -23,7 +23,8 @@ CREATE TABLE teams (
     updated_at      TEXT    NOT NULL DEFAULT (datetime('now')),
     owned_by        INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT, --team owners must resolve their teams (delete or transfer ownership) before account deletion
     deleted_at      TEXT    NULL,                                               --RESTRICT is a last guard but should never actually trigger; enforce the policy for soft-deletion at service level
-    kill_after      TEXT    NULL
+    kill_after      TEXT    NULL,
+    standup_retention_days  INTEGER NULL
 );
 
 CREATE INDEX idx_tm_owners ON teams(owned_by);
@@ -44,24 +45,10 @@ CREATE TABLE team_members (
 CREATE INDEX idx_tm_memberships_user ON team_members(user_id);
 CREATE INDEX idx_tm_memberships_team ON team_members(team_id);
 
-CREATE TABLE projects (
-    id              INTEGER PRIMARY KEY,
-    title           TEXT    NOT NULL,
-    for_team        INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
-    lead_by         INTEGER NULL REFERENCES team_members(id) ON DELETE SET NULL,
-    deadline        TEXT    NULL,
-    project_status  TEXT    NOT NULL DEFAULT 'active'
-                            CHECK (project_status IN ('active', 'completed', 'abandoned')),
-    created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
-    updated_at      TEXT    NOT NULL DEFAULT (datetime('now')),
-    retired_at      TEXT    NULL,
-    standup_retention_days  INTEGER NULL
-);
-
 CREATE TABLE standups (
     id              INTEGER PRIMARY KEY,
     posted_by       INTEGER NOT NULL REFERENCES team_members(id) ON DELETE CASCADE,
-    for_project     INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    for_team        INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
     worked_on       TEXT    NULL,
     will_work_on    TEXT    NULL,
     blocked_by      TEXT    NULL,
@@ -70,7 +57,7 @@ CREATE TABLE standups (
     kill_after      TEXT    NULL
 );
 
-CREATE INDEX idx_standups_project ON standups(for_project, created_at DESC);
+CREATE INDEX idx_standups_team ON standups(for_team, created_at DESC);
 CREATE INDEX idx_standups_kill_after ON standups(kill_after) WHERE kill_after IS NOT NULL;
 
 CREATE TABLE user_sessions (

@@ -78,31 +78,31 @@ Team-level user profiles, similar to Slack/Discord server profiles. User activit
 
 #### Standups
 
-Standups posted per project that include stand ups and blockers. Assuming user will post both at once, if we want to display stand-ups, blockers separately, they can be derived from this table.
+Standups posted per team that include stand ups and blockers. Assuming user will post both at once, if we want to display stand-ups, blockers separately, they can be derived from this table.
 
-Shape of a standup entry as produced by `createStandup` in `src/standup.js` and stored by `createStandupStore` in `src/standupStore.js`. Phase 1 keeps everything in memory. Phase 2 will move this into a Supabase Postgres table with the same column names (see ADR-0002).
+Shape of a standup entry as produced by `createStandup` in `src/standup.js` and stored by `createStandupStore` in `src/standupStore.js`. The following fields be delivered to the backend for processing.
 
 ##### Fields
 
-| Field         | Type   | Description                                                |
-| ------------- | ------ | ---------------------------------------------------------- |
-| `name`        | string | Team member who submitted the standup                      |
-| `done`        | string | Summary of what they finished since the last standup       |
-| `todo`        | string | What they plan to work on next                             |
-| `blockers`    | string | Anything blocking them, or `"none"`                        |
-| `submittedAt` | string | ISO 8601 UTC timestamp, set automatically at creation time |
+| Field       | Type    | Description                                                                          |
+| ----------- | ------- | ------------------------------------------------------------------------------------ |
+| `posted_by` | integer | ID of the _team member_ who submitted the standup **[given by client]**              |
+| `for_team`  | integer | ID of the team where the standup was submitted **[given by client]**                 |
+| `done`      | string  | Summary of what they finished since the last standup or `"none"` **[given by user]** |
+| `todo`      | string  | What they plan to work on next or `"none"` **[given by user]**                       |
+| `blockers`  | string  | Anything blocking them, or `"none"` **[given by user]**                              |
 
-All fields are required strings. No validation is enforced at this layer since the form (Issue #10) is expected to handle that on input.
+All fields are required. Parsing and type validation will be handled at the API layer.
 
 ##### Example
 
 ```json
 {
-  "name": "Cedric",
+  "posted_by": 66,
+  "for_team": 66,
   "done": "Finished frontend layout",
   "todo": "Working on JSON parser",
-  "blockers": "None",
-  "submittedAt": "2026-05-17T18:00:00.000Z"
+  "blockers": "None"
 }
 ```
 
@@ -110,7 +110,7 @@ All fields are required strings. No validation is enforced at this layer since t
 
 The in-memory store at `src/standupStore.js` exposes:
 
-- `add(name, done, todo, blockers)`: creates a standup and pushes it to the store, returns the new standup
+- `add(posted_by, for_team, name, done, todo, blockers)`: creates a standup and pushes it to the store, returns the new standup
 - `getAll()`: returns all stored standups
 - `serialize()`: returns all standups serialized to pretty-printed JSON
 
@@ -119,36 +119,44 @@ Use `createStandupStore()` for a fresh instance (useful in tests) or import the 
 ```js
 import { standupStore } from './standupStore.js';
 
-standupStore.add('Kyle', 'closed Issue #11', 'pick up Issue #20', 'none');
+standupStore.add(
+  66,
+  66,
+  'Kyle',
+  'closed Issue #11',
+  'pick up Issue #20',
+  'none',
+);
 console.log(standupStore.serialize());
 ```
 
-##### Phase 2 Migration Notes
+##### Derived Fields
 
-When Supabase comes online, the table can be created as:
+The table will be created in the database as:
 
 ```sql
-create table standups (
-  id bigserial primary key,
-  name text not null,
-  done text not null,
-  todo text not null,
-  blockers text not null,
-  submitted_at timestamptz not null default now()
+CREATE TABLE standups (
+    id              INTEGER PRIMARY KEY,
+    posted_by       INTEGER NOT NULL REFERENCES team_members(id) ON DELETE CASCADE,
+    for_team        INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+    worked_on       TEXT    NULL,
+    will_work_on    TEXT    NULL,
+    blocked_by      TEXT    NULL,
+    created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+    updated_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+    kill_after      TEXT    NULL
 );
 ```
 
+Rows not passed by the frontend (`id`, `created_at`, `updated_at`, `kill_after`) are to be derived in the backend.
+
 ---
 
-**Projects** - projects associated with a certain team, encompasses several tasks and project members. Can have an optional status and deadline, and may be archived and unarchived or hard-deleted from database. May have a leader assigned to it.
+**Tasks** - associated with teams. May have a deadline and/or status attached and may be deactivated/reactivated or hard-deleted.
 
-**Project Members** - a subset of team members; team members associated with a project who may leave or rejoin a project while preserving their activity in said project (activity will be removed on account hard deletion).
+**Task Members** - a subset of team members; team members associated with a task who may assign or unassign themselves to said task while presving activity (activity will be removed on hard account deletion).
 
-**Tasks** - associated with projects. May have a deadline and/or status attached and may be deactivated/reactivated or hard-deleted.
-
-**Task Members** - a subset of project members; project members associated with a task who may assign or unassign themselves to said task while presving activity (activity will be removed on hard account deletion).
-
-**Cover Requests** - associated with a team member and a project. Can be given a modifiable start and end date, but will be hard-deleted after the end date has been passed. Can also be hard-deleted anytime prior by poster of cover request or a project administrator.
+**Cover Requests** - associated with a team member and a team. Can be given a modifiable start and end date, but will be hard-deleted after the end date has been passed. Can also be hard-deleted anytime prior by poster of cover request or a team administrator.
 
 ### Relationships
 
@@ -156,24 +164,22 @@ Sessions <- Users
 
 Teams <- Users
 <br>
-Teams -> Projects <- Team Members
 <br>
-Tasks <- Projects
+Tasks <- Teams
 
 Users -> Team Members <- Teams
 <br>
-Team Members -> Project Members <- Projects
 <br>
-Project Members -> Task Members <- Tasks
+Team Members -> Task Members <- Tasks
 
-Team Members -> Check-Ins <- Projects
+Team Members -> Standups <- Teams
 <br>
-Team Members -> Cover Requests <- Projects
+Team Members -> Cover Requests <- Teams
 
 ### Constraints
 
 - User details are for authentication; in practice users should only see each other's team-specific **Team Member** details
-- Teams own projects, projects own tasks; do not skip the hierarchy
+- Teams own tasks; do not skip the hierarchy
 - Hard-deletion is true deletion; any hard-deleted info is unrecoverable
 - Store all timestamps in UTC for uniformity; only convert to local time when reading to client
 - Soft-deleted/archived rows are strictly read-only unless reactivated
@@ -181,7 +187,7 @@ Team Members -> Cover Requests <- Projects
 
 ### Completion
 
-First draft: v0.1
+First draft: v1
 
 ### To do
 
@@ -190,19 +196,16 @@ Based on our "musts":
 - [x] Users
 - [x] Team memberships
 - [x] Teams
-- [x] Check-ins (standups + mood)
+- [x] Standups
 - [x] Blockers
 - [x] Cover requests
 
 ---
 
 - [x] Relationships between users and teams
-- [x] Relationships between teams and projects
-- [x] Relationships between team members and projects
-- [x] Relationships between projects and tasks
 - [x] Relationships between team members and tasks
-- [x] Relationships between projects and check-ins/cover reqs
-- [x] Relationships between team members and check-ins/cover reqs
+- [x] Relationships between teams and standups/cover reqs
+- [x] Relationships between team members and standups/cover reqs
 
 ### Visualization/Modification
 

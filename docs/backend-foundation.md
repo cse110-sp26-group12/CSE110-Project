@@ -24,7 +24,7 @@ Direct interaction with the frontend. HTTP parsing and response.
 
 - HTTP method and path
 
-_e.g._ `POST {something o algo}/projects/66/check-ins`
+_e.g._ `POST {something o algo}/teams/66/standups`
 
 - Request body
 
@@ -34,7 +34,7 @@ _e.g._
 
 {
     "posted_by_member" : 66,
-    "for_project" : 66,
+    "for_team" : 66,
     "worked_on" : "Roblox content creation",
     "will_work_on" : "Nothing",
     "blockers" : "My mom"
@@ -55,7 +55,7 @@ Function calls with parsed HTTP parameters as arguments
 
 ### Expected from Service Layer
 
-Return values of frontend-ready dictionaries and/or exceptions (e.g. "Project not found")
+Return values of frontend-ready dictionaries and/or exceptions (e.g. "Team not found")
 
 ### Expected to Frontend
 
@@ -86,7 +86,7 @@ Function calls with validated arguments
 - Assume all required fields are present
   <br>
 - Do not assume user has permission
-- Do not assume that the associated entity (e.g. check-in) exists
+- Do not assume that the associated entity (e.g. standup) exists
 
 ### Expected to Data Repo
 
@@ -94,7 +94,7 @@ Single-table CRUD function calls
 
 #### _Notes_
 
-- User team/project/task membership and permissions should be verified before calling upon data repo
+- User team/task membership and permissions should be verified before calling upon data repo
 - Compute derived fields like `kill_after`
 - Decide WHICH database accesses are made
 - Function calls should access one table at a time for simplicity

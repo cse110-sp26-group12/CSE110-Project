@@ -31,6 +31,7 @@ Table teams {
   owned_by integer [not null]
   deleted_at timestamp [null, note: 'soft-to-hard deletion scheme; if column is not NULL then row is soft-deleted and will be hard-deleted after timestamp in kill_after']
   kill_after timestamp [null, note: 'soft-to-hard deletion scheme: if column is not NULL then row will be hard-deleted after this date']
+  standup_retention_days integer [null]
 }
 Ref: teams.owned_by < users.id
 
@@ -51,53 +52,26 @@ Ref: team_members.team_id < teams.id
 Table standups {
   id integer [primary key]
   posted_by_member integer [not null]
-  for_project integer [not null]
+  for_team integer [not null]
   worked_on string [null]
   will_work_on string [null]
   blockers string [null]
   created_at timestamp [default: 'Now()']
-  kill_after timestamp [not null, note: 'Could be a configuration for check-ins to be deleted or not after a certain time past creation, as dictated by project administrator']
+  kill_after timestamp [not null, note: 'Could be a configuration for check-ins to be deleted or not after a certain time past creation, as dictated by team administrator']
 }
 Ref: standups.posted_by_member < team_members.id
-Ref: standups.for_project < projects.id
-
-Table projects {
-  id integer [primary key]
-  title string [not null]
-  for_team integer [not null]
-  lead_by integer [null]
-  deadline timestamp [null]
-  project_status enum [null]
-  created_at timestamp [default: 'Now()']
-  updated_at timestamp [default: 'Now()']
-  archived_at timestamp [null, note: 'Deactivated after a project is complete or abandoned, may be reactivated but otherwise should be archived as read-only. On deletion may be hard-deleted from DB']
-  standup_retention_days integer [null]
-}
-Ref: projects.for_team < teams.id
-Ref: projects.lead_by < team_members.id
-
-Table project_members {
-  id integer [primary key]
-  user_id integer [not null]
-  proj_id integer [not null]
-  role enum [default: 'Member']
-  created_at timestamp [default: 'Now()']
-  retired_at timestamp [null, note: 'Soft-deletion; if a active user leaves a project, they will be marked as retired but what they did on the project will persist; if user hard deletes account, activity on project will be removed']
-  note: 'One unique membership per user/project; enforce UNIQUE(user_id, project_id)'
-}
-Ref: project_members.user_id < team_members.id
-Ref: project_members.proj_id < projects.id
+Ref: standups.for_team < teams.id
 
 Table tasks {
   id integer [primary key]
   title string [not null]
-  for_project integer [not null]
+  for_team integer [not null]
   deadline timestamp [null]
   status string [null]
   created_at timestamp [default: 'Now()']
   retired_at timestamp [null, note: 'Deactivated after a task is complete or abandoned, may be reactivated but otherwise should be archived. On deletion may be hard-deleted from DB']
 }
-Ref: tasks.for_project < projects.id
+Ref: tasks.for_team < teams.id
 
 Table task_members { //filter out memberships in soft-deleted teams, delete associated memberships upon hard-deletion of a team
   id integer [primary key]
@@ -114,7 +88,7 @@ Ref: task_members.task_id < tasks.id
 Table cover_reqs {
   id integer [primary key]
   title string [not null]
-  for_project integer [not null]
+  for_team integer [not null]
   posted_by_member integer [not null]
   start timestamp [not null, note: 'start time can be modified while active, cannot be set before current date']
   end timestamp [not null, note: 'cannot be set before start time; end time can be modified while active, but the request itself will be hard-deleted if this timestamp is passed']
@@ -123,6 +97,6 @@ Table cover_reqs {
   fulfilled_by_member integer [null]
   created_at timestamp [default: 'Now()']
 }
-Ref: cover_reqs.for_project < projects.id
+Ref: cover_reqs.for_team < teams.id
 Ref: cover_reqs.posted_by_member < team_members.id
 Ref: cover_reqs.fulfilled_by_member < team_members.id

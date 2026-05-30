@@ -242,7 +242,7 @@ describe('runDatabaseMigrations', () => {
     });
 
     describe('against the real initial migration', () => {
-        it('successfully applies 001_initial.sql to a fresh database', () => {
+        it('successfully applies 01_initial.sql to a fresh database', () => {
             const db = freshDb();
             const finalVersion = runDatabaseMigrations({ db });
 
@@ -256,7 +256,6 @@ describe('runDatabaseMigrations', () => {
                 'users',
                 'teams',
                 'team_members',
-                'projects',
                 'standups',
                 'user_sessions',
             ]));
@@ -276,7 +275,7 @@ describe('runDatabaseMigrations', () => {
                 'idx_tm_owners',
                 'idx_tm_memberships_user',
                 'idx_tm_memberships_team',
-                'idx_standups_project',
+                'idx_standups_team',
                 'idx_standups_kill_after',
                 'idx_sessions_token',
                 'idx_sessions_user',
