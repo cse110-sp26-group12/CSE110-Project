@@ -6,26 +6,18 @@
  * - WILL NOT run conditional logic beyond input parsing and generating errors.
  */
 
-// This is a placeholder for the Service Layer which will be implemented next.
-// For now, it acts as a bridge.
-const mockService = {
-  async addStandup(data) {
-    console.log('Service Layer: Adding standup', data);
-    return { ...data, id: Date.now(), submittedAt: new Date().toISOString() };
-  },
-  async getAllStandups() {
-    console.log('Service Layer: Fetching all standups');
-    return [];
-  },
-};
+import {
+  standupService,
+  StandupValidationError,
+} from '../service-layer/standupService.js';
 
 export async function handleGetStandups(req, res) {
   try {
-    const standups = await mockService.getAllStandups();
+    const standups = await standupService.getAllStandups();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(standups));
   } catch (error) {
-    console.warn(error); //so linter shuts up
+    console.warn(error);
     res.writeHead(500, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Internal Server Error' }));
   }
@@ -47,7 +39,7 @@ export async function handlePostStandup(req, res, body) {
     }
 
     // 2. Call Service Layer
-    const newStandup = await mockService.addStandup({
+    const newStandup = await standupService.addStandup({
       name,
       done,
       todo,
@@ -58,7 +50,13 @@ export async function handlePostStandup(req, res, body) {
     res.writeHead(201, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(newStandup));
   } catch (error) {
-    console.warn(error); //so linter shuts up
+    if (error instanceof StandupValidationError) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: error.message }));
+      return;
+    }
+
+    console.warn(error);
     res.writeHead(500, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Internal Server Error' }));
   }
