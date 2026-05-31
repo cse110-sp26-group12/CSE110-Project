@@ -273,10 +273,13 @@ describe('runDatabaseMigrations', () => {
                 'idx_users_kill_after',
                 'idx_tm_owners',
                 'idx_tm_memberships_team',
+                'idx_standups_poster',
+                'idx_standups_poster_blockers',
                 'idx_standups_team',
+                'idx_standups_team_blockers',
                 'idx_standups_kill_after',
                 'idx_sessions_user',
-                'idx_sessions_expires'
+                'idx_sessions_expires',
             ]));
         });
 

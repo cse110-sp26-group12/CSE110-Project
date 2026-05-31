@@ -34,7 +34,7 @@ CREATE TABLE team_members (
     team_id         INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
     display_name    TEXT    NOT NULL,
     member_role     TEXT    NOT NULL DEFAULT 'member'
-                            CHECK (member_role IN ('admin', 'member')),
+                            CHECK (member_role IN ('admin', 'member', 'left')),
     joined_at       TEXT    NOT NULL,
     updated_at      TEXT    NOT NULL,
     left_at         TEXT    NULL,
@@ -50,12 +50,25 @@ CREATE TABLE standups (
     worked_on       TEXT    NULL,
     will_work_on    TEXT    NULL,
     blocked_by      TEXT    NULL,
+    blocker_resolved INTEGER NOT NULL DEFAULT 0 CHECK (blocker_resolved IN (0, 1)), -- so blocker content can still be displayed (i.e. crossed out) after resolution
     created_at      TEXT    NOT NULL,
     updated_at      TEXT    NOT NULL,
-    kill_after      TEXT    NULL
+    kill_after      TEXT    NULL,
+    -- can only resolve if there's a blocker to resolve
+    CHECK(
+        blocker_resolved = 0
+        OR (blocked_by IS NOT NULL AND blocked_by != '')
+    )
 );
 
+CREATE INDEX idx_standups_poster ON standups(posted_by, created_at DESC);
+CREATE INDEX idx_standups_poster_blockers ON standups(posted_by, created_at DESC)
+    WHERE blocked_by IS NOT NULL AND blocked_by != '';
+
 CREATE INDEX idx_standups_team ON standups(for_team, created_at DESC);
+CREATE INDEX idx_standups_team_blockers ON standups(for_team, created_at DESC)
+    WHERE blocked_by IS NOT NULL AND blocked_by != '';
+
 CREATE INDEX idx_standups_kill_after ON standups(kill_after) WHERE kill_after IS NOT NULL;
 
 CREATE TABLE user_sessions (

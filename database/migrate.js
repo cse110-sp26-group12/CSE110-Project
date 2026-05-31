@@ -26,24 +26,29 @@ export function runDatabaseMigrations({
 
     const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
 
-    const apply = db.transaction(() => {
-      try {
-        db.exec(sql);
-      } catch (err) {
-        throw new Error(
-          `Migration failed in ${file}: ${err.message} (${err.code})`,
-          { cause: err },
-        );
-      }
-      const newVersion = db.pragma('user_version', { simple: true });
-      if (newVersion !== targetVersion) {
-        throw new Error(
-          `Migration ${file} did not set user_version to ${targetVersion} (got ${newVersion})`,
-        );
-      }
-    });
+    db.pragma('foreign_keys = OFF');
+    try {
+      const apply = db.transaction(() => {
+        try {
+          db.exec(sql);
+        } catch (err) {
+          throw new Error(
+            `Migration failed in ${file}: ${err.message} (${err.code})`,
+            { cause: err },
+          );
+        }
+        const newVersion = db.pragma('user_version', { simple: true });
+        if (newVersion !== targetVersion) {
+          throw new Error(
+            `Migration ${file} did not set user_version to ${targetVersion} (got ${newVersion})`,
+          );
+        }
+      });
 
-    apply();
+      apply();
+    } finally {
+      db.pragma('foreign_keys = ON');
+    }
   }
 
   return db.pragma('user_version', { simple: true });

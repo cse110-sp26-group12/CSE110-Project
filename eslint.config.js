@@ -30,6 +30,8 @@ export default [
         test: 'readonly',
         afterEach: 'readonly',
         beforeEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
       }
     }
   },
