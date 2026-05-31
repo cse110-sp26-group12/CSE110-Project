@@ -35,13 +35,33 @@ function renderStandupCard(standup, status) {
   standupList.prepend(card);
 }
 
+async function readJsonResponse(response) {
+  const text = await response.text();
+
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(
+      'Server did not return JSON. Run npm start and open http://localhost:3000/ instead of the Live Server URL.',
+    );
+  }
+}
+
 // --- Fetch all standups on load ---
 async function loadStandups() {
   try {
     const response = await fetch('/api/standups');
-    if (!response.ok) throw new Error('Failed to load standups');
+    const responseData = await readJsonResponse(response);
 
-    const standups = await response.json();
+    if (!response.ok) {
+      throw new Error(responseData?.error || 'Failed to load standups');
+    }
+
+    const standups = Array.isArray(responseData) ? responseData : [];
     if (standups.length > 0) {
       emptyState.style.display = 'none';
       standups.forEach((s) => renderStandupCard(s));
@@ -102,13 +122,17 @@ submitButton.addEventListener('click', async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
+    const responseData = await readJsonResponse(response);
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to submit standup');
+      throw new Error(responseData?.error || 'Failed to submit standup');
     }
 
-    const savedStandup = await response.json();
+    if (!responseData) {
+      throw new Error('Server returned an empty response.');
+    }
+
+    const savedStandup = responseData;
 
     emptyState.style.display = 'none';
     renderStandupCard(savedStandup, status);
