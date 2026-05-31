@@ -15,15 +15,19 @@ function createStandup(name, done, todo, blockers) {
 
 // ── Tab switching ──────────────────────────────────────────────────────
 
-document.querySelectorAll('.nav-links a[data-page]').forEach(link => {
-  link.addEventListener('click', e => {
+document.querySelectorAll('.nav-links a[data-page]').forEach((link) => {
+  link.addEventListener('click', (e) => {
     e.preventDefault();
     const page = link.dataset.page;
 
-    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+    document
+      .querySelectorAll('.nav-links a')
+      .forEach((a) => a.classList.remove('active'));
     link.classList.add('active');
 
-    document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
+    document
+      .querySelectorAll('.panel')
+      .forEach((p) => p.classList.add('hidden'));
     document.getElementById('panel-' + page).classList.remove('hidden');
 
     window.scrollTo(0, 0);
@@ -35,28 +39,30 @@ document.querySelectorAll('.nav-links a[data-page]').forEach(link => {
 const themeToggle = document.getElementById('themeToggle');
 themeToggle.addEventListener('click', () => {
   document.body.classList.toggle('dark');
-  themeToggle.textContent = document.body.classList.contains('dark') ? 'Light Mode' : 'Dark Mode';
+  themeToggle.textContent = document.body.classList.contains('dark')
+    ? 'Light Mode'
+    : 'Dark Mode';
 });
 
 // ── Daily StandUp ──────────────────────────────────────────────────────
 
-const submitBtn      = document.getElementById('submitStandup');
-const standupList    = document.getElementById('standupList');
-const emptyState     = document.getElementById('emptyState');
+const submitBtn = document.getElementById('submitStandup');
+const standupList = document.getElementById('standupList');
+const emptyState = document.getElementById('emptyState');
 const submittedCount = document.getElementById('submittedCount');
 const blockerCountEl = document.getElementById('blockerCount');
-const progressCount  = document.getElementById('progressCount');
+const progressCount = document.getElementById('progressCount');
 
 let totalSubmissions = 0;
-let totalBlockers    = 0;
-let totalInProgress  = 0;
+let totalBlockers = 0;
+let totalInProgress = 0;
 
 submitBtn.addEventListener('click', () => {
-  const name      = document.getElementById('su-name').value.trim();
-  const status    = document.getElementById('su-status').value;
+  const name = document.getElementById('su-name').value.trim();
+  const status = document.getElementById('su-status').value;
   const yesterday = document.getElementById('su-yesterday').value.trim();
-  const today     = document.getElementById('su-today').value.trim();
-  const blockers  = document.getElementById('su-blockers').value.trim();
+  const today = document.getElementById('su-today').value.trim();
+  const blockers = document.getElementById('su-blockers').value.trim();
 
   if (!name || !yesterday || !today) {
     alert("Please fill out your name, yesterday's work, and today's plan.");
@@ -67,8 +73,12 @@ submitBtn.addEventListener('click', () => {
   emptyState.style.display = 'none';
 
   let statusClass = 'done';
-  if (status === 'In progress') { statusClass = 'progress'; totalInProgress++; }
-  else if (status === 'Blocked') { statusClass = 'blocker'; }
+  if (status === 'In progress') {
+    statusClass = 'progress';
+    totalInProgress++;
+  } else if (status === 'Blocked') {
+    statusClass = 'blocker';
+  }
 
   if (standup.blockers) totalBlockers++;
   totalSubmissions++;
@@ -100,23 +110,23 @@ submitBtn.addEventListener('click', () => {
 
   submittedCount.textContent = totalSubmissions;
   blockerCountEl.textContent = totalBlockers;
-  progressCount.textContent  = totalInProgress;
+  progressCount.textContent = totalInProgress;
 
-  document.getElementById('su-name').value      = '';
-  document.getElementById('su-status').value    = 'On track';
+  document.getElementById('su-name').value = '';
+  document.getElementById('su-status').value = 'On track';
   document.getElementById('su-yesterday').value = '';
-  document.getElementById('su-today').value     = '';
-  document.getElementById('su-blockers').value  = '';
+  document.getElementById('su-today').value = '';
+  document.getElementById('su-blockers').value = '';
 });
 
 // ── Team Board ─────────────────────────────────────────────────────────
 
-const addMemberBtn     = document.getElementById('addMemberBtn');
-const addMemberForm    = document.getElementById('addMemberForm');
-const memberNameInput  = document.getElementById('memberNameInput');
+const addMemberBtn = document.getElementById('addMemberBtn');
+const addMemberForm = document.getElementById('addMemberForm');
+const memberNameInput = document.getElementById('memberNameInput');
 const confirmAddMember = document.getElementById('confirmAddMember');
-const memberList       = document.getElementById('memberList');
-const memberEmpty      = document.getElementById('memberEmpty');
+const memberList = document.getElementById('memberList');
+const memberEmpty = document.getElementById('memberEmpty');
 
 addMemberBtn.addEventListener('click', () => {
   addMemberForm.classList.toggle('hidden');
@@ -149,17 +159,19 @@ function addMember() {
 }
 
 confirmAddMember.addEventListener('click', addMember);
-memberNameInput.addEventListener('keydown', e => { if (e.key === 'Enter') addMember(); });
+memberNameInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addMember();
+});
 
 // ── Tasks ──────────────────────────────────────────────────────────────
 
-const createTaskBtn      = document.getElementById('createTaskBtn');
-const createTaskForm     = document.getElementById('createTaskForm');
-const taskNameInput      = document.getElementById('taskNameInput');
-const confirmCreateTask  = document.getElementById('confirmCreateTask');
-const taskList           = document.getElementById('taskList');
-const taskEmpty          = document.getElementById('taskEmpty');
-const completedTaskList  = document.getElementById('completedTaskList');
+const createTaskBtn = document.getElementById('createTaskBtn');
+const createTaskForm = document.getElementById('createTaskForm');
+const taskNameInput = document.getElementById('taskNameInput');
+const confirmCreateTask = document.getElementById('confirmCreateTask');
+const taskList = document.getElementById('taskList');
+const taskEmpty = document.getElementById('taskEmpty');
+const completedTaskList = document.getElementById('completedTaskList');
 const completedTaskEmpty = document.getElementById('completedTaskEmpty');
 
 let taskCount = 0;
@@ -201,17 +213,19 @@ function createTask() {
 }
 
 confirmCreateTask.addEventListener('click', createTask);
-taskNameInput.addEventListener('keydown', e => { if (e.key === 'Enter') createTask(); });
+taskNameInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') createTask();
+});
 
 // ── Blockers ───────────────────────────────────────────────────────────
 
-const createBlockerBtn     = document.getElementById('createBlockerBtn');
-const createBlockerForm    = document.getElementById('createBlockerForm');
-const blockerDescInput     = document.getElementById('blockerDescInput');
+const createBlockerBtn = document.getElementById('createBlockerBtn');
+const createBlockerForm = document.getElementById('createBlockerForm');
+const blockerDescInput = document.getElementById('blockerDescInput');
 const confirmCreateBlocker = document.getElementById('confirmCreateBlocker');
-const blockerItemList      = document.getElementById('blockerItemList');
-const blockerItemEmpty     = document.getElementById('blockerItemEmpty');
-const resolvedBlockerList  = document.getElementById('resolvedBlockerList');
+const blockerItemList = document.getElementById('blockerItemList');
+const blockerItemEmpty = document.getElementById('blockerItemEmpty');
+const resolvedBlockerList = document.getElementById('resolvedBlockerList');
 const resolvedBlockerEmpty = document.getElementById('resolvedBlockerEmpty');
 
 let blockerItemCount = 0;
@@ -237,7 +251,8 @@ function createBlockerItem() {
   `;
   item.querySelector('input').addEventListener('change', () => {
     item.remove();
-    if (blockerItemList.children.length === 0) blockerItemEmpty.style.display = '';
+    if (blockerItemList.children.length === 0)
+      blockerItemEmpty.style.display = '';
 
     const resolved = document.createElement('div');
     resolved.classList.add('check-item');
@@ -253,4 +268,6 @@ function createBlockerItem() {
 }
 
 confirmCreateBlocker.addEventListener('click', createBlockerItem);
-blockerDescInput.addEventListener('keydown', e => { if (e.key === 'Enter') createBlockerItem(); });
+blockerDescInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') createBlockerItem();
+});
