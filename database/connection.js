@@ -11,7 +11,7 @@ export function createDatabaseConnection(dbPath) {
   fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
   const db = new Database(dbPath, {
-    //verbose: console.log, // uncomment for query logging
+    // verbose: console.log, // uncomment for query logging
   });
 
   db.pragma('journal_mode = WAL'); //Write-Ahead Logging for concurrency, otherwise writes block reads

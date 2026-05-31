@@ -1,162 +1,256 @@
-// --- Helper to render a standup card ---
-function renderStandupCard(standup, status) {
-  const card = document.createElement('article');
-  card.classList.add('standup-card');
+// ── Helpers ───────────────────────────────────────────────────────────
 
-  // Determine status class if not provided
-  let statusClass = 'done';
-  if (status === 'In progress') statusClass = 'progress';
-  else if (status === 'Blocked') statusClass = 'blocker';
-
-  card.innerHTML = `
-    <div class="standup-header">
-      <div>
-        <h3 class="person">${standup.name}</h3>
-        <p class="role">Team Member</p>
-      </div>
-      <span class="status ${statusClass}">${status || 'On track'}</span>
-    </div>
-
-    <div class="standup-section">
-      <strong>Yesterday</strong>
-      <p>${standup.done}</p>
-    </div>
-
-    <div class="standup-section">
-      <strong>Today</strong>
-      <p>${standup.todo}</p>
-    </div>
-
-    <div class="standup-section">
-      <strong>Blockers</strong>
-      <p>${standup.blockers || 'No blockers reported.'}</p>
-    </div>
-  `;
-  standupList.prepend(card);
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
-async function readJsonResponse(response) {
-  const text = await response.text();
-
-  if (!text) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error(
-      'Server did not return JSON. Run npm start and open http://localhost:3000/ instead of the Live Server URL.',
-    );
-  }
+function createStandup(name, done, todo, blockers) {
+  return { name, done, todo, blockers, submittedAt: new Date().toISOString() };
 }
 
-// --- Fetch all standups on load ---
-async function loadStandups() {
-  try {
-    const response = await fetch('/api/standups');
-    const responseData = await readJsonResponse(response);
+// ── Tab switching ──────────────────────────────────────────────────────
 
-    if (!response.ok) {
-      throw new Error(responseData?.error || 'Failed to load standups');
-    }
+document.querySelectorAll('.nav-links a[data-page]').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const page = link.dataset.page;
 
-    const standups = Array.isArray(responseData) ? responseData : [];
-    if (standups.length > 0) {
-      emptyState.style.display = 'none';
-      standups.forEach((s) => renderStandupCard(s));
+    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+    link.classList.add('active');
 
-      totalSubmissions = standups.length;
-      totalBlockers = standups.filter(
-        (s) => s.blockers && s.blockers.toLowerCase() !== 'none',
-      ).length;
-      // Note: we'd need 'status' in the backend to accurately count in-progress
+    document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
+    document.getElementById('panel-' + page).classList.remove('hidden');
 
-      submittedCount.textContent = totalSubmissions;
-      blockerCount.textContent = totalBlockers;
-    }
-  } catch (error) {
-    console.error('Error loading standups:', error);
-  }
-}
-
-const toggle = document.getElementById('themeToggle');
-const submitButton = document.querySelector('.submit-btn');
-const standupList = document.getElementById('standupList');
-const emptyState = document.getElementById('emptyState');
-
-const submittedCount = document.getElementById('submittedCount');
-const blockerCount = document.getElementById('blockerCount');
-const progressCount = document.getElementById('progressCount');
-
-let totalSubmissions = 0;
-let totalBlockers = 0;
-let totalInProgress = 0;
-
-toggle.addEventListener('click', () => {
-  document.body.classList.toggle('dark');
+    window.scrollTo(0, 0);
+  });
 });
 
-submitButton.addEventListener('click', async () => {
-  const name = document.getElementById('name').value.trim();
-  const status = document.getElementById('status').value;
-  const yesterday = document.getElementById('yesterday').value.trim();
-  const today = document.getElementById('today').value.trim();
-  const blockers = document.getElementById('blockers').value.trim();
+// ── Theme toggle ───────────────────────────────────────────────────────
+
+const themeToggle = document.getElementById('themeToggle');
+themeToggle.addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  themeToggle.textContent = document.body.classList.contains('dark') ? 'Light Mode' : 'Dark Mode';
+});
+
+// ── Daily StandUp ──────────────────────────────────────────────────────
+
+const submitBtn      = document.getElementById('submitStandup');
+const standupList    = document.getElementById('standupList');
+const emptyState     = document.getElementById('emptyState');
+const submittedCount = document.getElementById('submittedCount');
+const blockerCountEl = document.getElementById('blockerCount');
+const progressCount  = document.getElementById('progressCount');
+
+let totalSubmissions = 0;
+let totalBlockers    = 0;
+let totalInProgress  = 0;
+
+submitBtn.addEventListener('click', () => {
+  const name      = document.getElementById('su-name').value.trim();
+  const status    = document.getElementById('su-status').value;
+  const yesterday = document.getElementById('su-yesterday').value.trim();
+  const today     = document.getElementById('su-today').value.trim();
+  const blockers  = document.getElementById('su-blockers').value.trim();
 
   if (!name || !yesterday || !today) {
     alert("Please fill out your name, yesterday's work, and today's plan.");
     return;
   }
 
-  const payload = {
-    name,
-    done: yesterday,
-    todo: today,
-    blockers: blockers || 'none',
-  };
+  const standup = createStandup(name, yesterday, today, blockers);
+  emptyState.style.display = 'none';
 
-  try {
-    const response = await fetch('/api/standups', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const responseData = await readJsonResponse(response);
+  let statusClass = 'done';
+  if (status === 'In progress') { statusClass = 'progress'; totalInProgress++; }
+  else if (status === 'Blocked') { statusClass = 'blocker'; }
 
-    if (!response.ok) {
-      throw new Error(responseData?.error || 'Failed to submit standup');
-    }
+  if (standup.blockers) totalBlockers++;
+  totalSubmissions++;
 
-    if (!responseData) {
-      throw new Error('Server returned an empty response.');
-    }
+  const card = document.createElement('article');
+  card.classList.add('standup-card');
+  card.innerHTML = `
+    <div class="standup-header">
+      <div>
+        <h3 class="person">${escapeHtml(standup.name)}</h3>
+        <p class="role">Team Member</p>
+      </div>
+      <span class="status ${statusClass}">${escapeHtml(status)}</span>
+    </div>
+    <div class="standup-section">
+      <strong>Yesterday</strong>
+      <p>${escapeHtml(standup.done)}</p>
+    </div>
+    <div class="standup-section">
+      <strong>Today</strong>
+      <p>${escapeHtml(standup.todo)}</p>
+    </div>
+    <div class="standup-section">
+      <strong>Blockers</strong>
+      <p>${standup.blockers ? escapeHtml(standup.blockers) : 'No blockers reported.'}</p>
+    </div>
+  `;
+  standupList.prepend(card);
 
-    const savedStandup = responseData;
+  submittedCount.textContent = totalSubmissions;
+  blockerCountEl.textContent = totalBlockers;
+  progressCount.textContent  = totalInProgress;
 
-    emptyState.style.display = 'none';
-    renderStandupCard(savedStandup, status);
-
-    // Update local counters
-    if (status === 'In progress') totalInProgress++;
-    if (payload.blockers.toLowerCase() !== 'none') totalBlockers++;
-    totalSubmissions++;
-
-    submittedCount.textContent = totalSubmissions;
-    blockerCount.textContent = totalBlockers;
-    progressCount.textContent = totalInProgress;
-
-    // Reset form
-    document.getElementById('name').value = '';
-    document.getElementById('status').value = 'On track';
-    document.getElementById('yesterday').value = '';
-    document.getElementById('today').value = '';
-    document.getElementById('blockers').value = '';
-  } catch (error) {
-    console.error('Error submitting standup:', error);
-    alert('Error: ' + error.message);
-  }
+  document.getElementById('su-name').value      = '';
+  document.getElementById('su-status').value    = 'On track';
+  document.getElementById('su-yesterday').value = '';
+  document.getElementById('su-today').value     = '';
+  document.getElementById('su-blockers').value  = '';
 });
 
-// Load existing data when page opens
-window.addEventListener('DOMContentLoaded', loadStandups);
+// ── Team Board ─────────────────────────────────────────────────────────
+
+const addMemberBtn     = document.getElementById('addMemberBtn');
+const addMemberForm    = document.getElementById('addMemberForm');
+const memberNameInput  = document.getElementById('memberNameInput');
+const confirmAddMember = document.getElementById('confirmAddMember');
+const memberList       = document.getElementById('memberList');
+const memberEmpty      = document.getElementById('memberEmpty');
+
+addMemberBtn.addEventListener('click', () => {
+  addMemberForm.classList.toggle('hidden');
+  if (!addMemberForm.classList.contains('hidden')) memberNameInput.focus();
+});
+
+function addMember() {
+  const name = memberNameInput.value.trim();
+  if (!name) return;
+
+  const item = document.createElement('div');
+  item.classList.add('member-item');
+  item.innerHTML = `
+    <div class="member-avatar">${escapeHtml(name.charAt(0).toUpperCase())}</div>
+    <div class="member-info">
+      <strong>${escapeHtml(name)}</strong>
+      <span>Team Member</span>
+    </div>
+    <button class="remove-btn" aria-label="Remove member">&times;</button>
+  `;
+  item.querySelector('.remove-btn').addEventListener('click', () => {
+    item.remove();
+    if (memberList.children.length === 0) memberEmpty.style.display = '';
+  });
+
+  memberList.appendChild(item);
+  memberEmpty.style.display = 'none';
+  memberNameInput.value = '';
+  addMemberForm.classList.add('hidden');
+}
+
+confirmAddMember.addEventListener('click', addMember);
+memberNameInput.addEventListener('keydown', e => { if (e.key === 'Enter') addMember(); });
+
+// ── Tasks ──────────────────────────────────────────────────────────────
+
+const createTaskBtn      = document.getElementById('createTaskBtn');
+const createTaskForm     = document.getElementById('createTaskForm');
+const taskNameInput      = document.getElementById('taskNameInput');
+const confirmCreateTask  = document.getElementById('confirmCreateTask');
+const taskList           = document.getElementById('taskList');
+const taskEmpty          = document.getElementById('taskEmpty');
+const completedTaskList  = document.getElementById('completedTaskList');
+const completedTaskEmpty = document.getElementById('completedTaskEmpty');
+
+let taskCount = 0;
+
+createTaskBtn.addEventListener('click', () => {
+  createTaskForm.classList.toggle('hidden');
+  if (!createTaskForm.classList.contains('hidden')) taskNameInput.focus();
+});
+
+function createTask() {
+  const name = taskNameInput.value.trim();
+  if (!name) return;
+
+  taskCount++;
+  const id = 'task-' + taskCount;
+
+  const item = document.createElement('div');
+  item.classList.add('check-item');
+  // label first → text on left; input last → checkbox on right
+  item.innerHTML = `
+    <label for="${id}">${escapeHtml(name)}</label>
+    <input type="checkbox" id="${id}" />
+  `;
+  item.querySelector('input').addEventListener('change', () => {
+    item.remove();
+    if (taskList.children.length === 0) taskEmpty.style.display = '';
+
+    const done = document.createElement('div');
+    done.classList.add('check-item');
+    done.innerHTML = `<span class="completed-text">${escapeHtml(name)}</span>`;
+    completedTaskList.appendChild(done);
+    completedTaskEmpty.style.display = 'none';
+  });
+
+  taskList.appendChild(item);
+  taskEmpty.style.display = 'none';
+  taskNameInput.value = '';
+  createTaskForm.classList.add('hidden');
+}
+
+confirmCreateTask.addEventListener('click', createTask);
+taskNameInput.addEventListener('keydown', e => { if (e.key === 'Enter') createTask(); });
+
+// ── Blockers ───────────────────────────────────────────────────────────
+
+const createBlockerBtn     = document.getElementById('createBlockerBtn');
+const createBlockerForm    = document.getElementById('createBlockerForm');
+const blockerDescInput     = document.getElementById('blockerDescInput');
+const confirmCreateBlocker = document.getElementById('confirmCreateBlocker');
+const blockerItemList      = document.getElementById('blockerItemList');
+const blockerItemEmpty     = document.getElementById('blockerItemEmpty');
+const resolvedBlockerList  = document.getElementById('resolvedBlockerList');
+const resolvedBlockerEmpty = document.getElementById('resolvedBlockerEmpty');
+
+let blockerItemCount = 0;
+
+createBlockerBtn.addEventListener('click', () => {
+  createBlockerForm.classList.toggle('hidden');
+  if (!createBlockerForm.classList.contains('hidden')) blockerDescInput.focus();
+});
+
+function createBlockerItem() {
+  const desc = blockerDescInput.value.trim();
+  if (!desc) return;
+
+  blockerItemCount++;
+  const id = 'blocker-' + blockerItemCount;
+
+  const item = document.createElement('div');
+  item.classList.add('check-item');
+  // label first → text on left; input last → checkbox on right
+  item.innerHTML = `
+    <label for="${id}">${escapeHtml(desc)}</label>
+    <input type="checkbox" id="${id}" />
+  `;
+  item.querySelector('input').addEventListener('change', () => {
+    item.remove();
+    if (blockerItemList.children.length === 0) blockerItemEmpty.style.display = '';
+
+    const resolved = document.createElement('div');
+    resolved.classList.add('check-item');
+    resolved.innerHTML = `<span class="completed-text">${escapeHtml(desc)}</span>`;
+    resolvedBlockerList.appendChild(resolved);
+    resolvedBlockerEmpty.style.display = 'none';
+  });
+
+  blockerItemList.appendChild(item);
+  blockerItemEmpty.style.display = 'none';
+  blockerDescInput.value = '';
+  createBlockerForm.classList.add('hidden');
+}
+
+confirmCreateBlocker.addEventListener('click', createBlockerItem);
+blockerDescInput.addEventListener('keydown', e => { if (e.key === 'Enter') createBlockerItem(); });
