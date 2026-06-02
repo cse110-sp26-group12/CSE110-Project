@@ -14,11 +14,21 @@ console.log(`Migration complete for database version: ${dbVersion}`);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 const server = http.createServer(async (req, res) => {
   const url = req.url;
   const method = req.method;
+
+   // --- CORS (let the GitHub Pages frontend call this API cross-origin) ---
+   res.setHeader('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || '*');
+   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+   if (method === 'OPTIONS') {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
 
   // --- API Routes ---
   if (url === '/api/standups' && method === 'GET') {
