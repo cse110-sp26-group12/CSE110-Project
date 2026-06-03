@@ -1,5 +1,5 @@
 // ── Helpers ───────────────────────────────────────────────────────────
-
+const API = 'https://sitrep-q52s.onrender.com';
 function escapeHtml(str) {
   return str
     .replace(/&/g, '&amp;')
@@ -51,7 +51,7 @@ let totalSubmissions = 0;
 let totalBlockers    = 0;
 let totalInProgress  = 0;
 
-submitBtn.addEventListener('click', () => {
+submitBtn.addEventListener('click', async () => {
   const name      = document.getElementById('su-name').value.trim();
   const status    = document.getElementById('su-status').value;
   const yesterday = document.getElementById('su-yesterday').value.trim();
@@ -62,8 +62,15 @@ submitBtn.addEventListener('click', () => {
     alert("Please fill out your name, yesterday's work, and today's plan.");
     return;
   }
+  // ── Data Sync: Save New Entry to Database ─────────────────────────────
+  try {
+    const res = await fetch(`${API}/api/standups`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, done: yesterday, todo: today, blockers }),
+    });
 
-  const standup = createStandup(name, yesterday, today, blockers);
+  const standup = await res.json();
   emptyState.style.display = 'none';
 
   let statusClass = 'done';
@@ -107,6 +114,10 @@ submitBtn.addEventListener('click', () => {
   document.getElementById('su-yesterday').value = '';
   document.getElementById('su-today').value     = '';
   document.getElementById('su-blockers').value  = '';
+  } catch (error) {
+    console.error("Failed to save standup to the backend:", error);
+    alert("Could not save standup. Is the backend server waking up?");
+  }
 });
 
 // ── Team Board ─────────────────────────────────────────────────────────
@@ -254,3 +265,65 @@ function createBlockerItem() {
 
 confirmCreateBlocker.addEventListener('click', createBlockerItem);
 blockerDescInput.addEventListener('keydown', e => { if (e.key === 'Enter') createBlockerItem(); });
+//── Data Sync: Load Existing Entries ───────────────────────────────────
+async function loadExistingStandups() {
+  try {
+    // 1. Fetch the data from the server (Defaults to a GET request)
+    const res = await fetch(`${API}/api/standups`);
+    const standups = await res.json(); 
+
+    if (standups.length > 0) {
+      emptyState.style.display = 'none';
+    }
+
+    // 2. Loop through the historical data and append cards to the UI
+    standups.reverse().forEach(standup => {
+      let statusClass = 'done';
+      let statusText = 'On track';
+      
+      if (standup.blockers) {
+        statusClass = 'blocker';
+        statusText = 'Blocked';
+        totalBlockers++;
+      }
+      
+      totalSubmissions++;
+
+      const card = document.createElement('article');
+      card.classList.add('standup-card');
+      card.innerHTML = `
+        <div class="standup-header">
+          <div>
+            <h3 class="person">${escapeHtml(standup.name)}</h3>
+            <p class="role">Team Member</p>
+          </div>
+          <span class="status ${statusClass}">${statusText}</span>
+        </div>
+        <div class="standup-section">
+          <strong>Yesterday</strong>
+          <p>${escapeHtml(standup.done)}</p>
+        </div>
+        <div class="standup-section">
+          <strong>Today</strong>
+          <p>${escapeHtml(standup.todo)}</p>
+        </div>
+        <div class="standup-section">
+          <strong>Blockers</strong>
+          <p>${standup.blockers ? escapeHtml(standup.blockers) : 'No blockers reported.'}</p>
+        </div>
+      `;
+      standupList.prepend(card);
+    });
+
+    // 3. Keep dashboard metric counters accurate on load
+    submittedCount.textContent = totalSubmissions;
+    blockerCountEl.textContent = totalBlockers;
+    progressCount.textContent  = totalInProgress;
+
+  } catch (error) {
+    console.error("Failed to load historical standups:", error);
+  }
+}
+
+// Automatically kick off the fetch request when the browser finishes loading
+loadExistingStandups();
