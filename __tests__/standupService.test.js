@@ -94,6 +94,7 @@ describe('standupService', () => {
       done: ' implemented handler ',
       todo: ' connect service layer ',
       blockers: '',
+      statusFlag: 'In progress',
     });
 
     expect(standup.name).toBe('Jialin');
@@ -110,6 +111,7 @@ describe('standupService', () => {
       done: 'closed issue',
       todo: 'open pr',
       blockers: 'none',
+      statusFlag: 'In progress',
     });
 
     const standups = await service.getAllStandups();

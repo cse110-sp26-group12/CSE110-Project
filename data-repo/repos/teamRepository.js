@@ -48,28 +48,28 @@ export const teamRepo = {
 
   /**
    * Finds an existing team by its unique invite code.
-   * @param { string } inviteCode team invite code
+   * @param { string } invite_code team invite code
    * @param { boolean } includeDeleted include soft-deleted rows in search (default false)
    * @returns {object | undefined } team row if found | undefined otherwise
    */
-  findByInviteCode(inviteCode, { includeDeleted = false } = {}) {
+  findByInviteCode(invite_code, { includeDeleted = false } = {}) {
     const sql = includeDeleted
       ? 'SELECT * FROM teams WHERE invite_code = ?'
       : 'SELECT * FROM teams WHERE invite_code = ? AND deleted_at IS NULL';
-    return getDb().prepare(sql).get(inviteCode);
+    return getDb().prepare(sql).get(invite_code);
   },
 
   /**
    * List teams owned by a given user, newest first.
-   * @param { number } ownerId user id of the team owner
+   * @param { number } owner_id user id of the team owner
    * @param { boolean } includeDeleted include soft-deleted rows in search (default false)
    * @returns {object[]}
    */
-  listByOwner(ownerId, { includeDeleted = false } = {}) {
+  listByOwner(owner_id, { includeDeleted = false } = {}) {
     const sql = includeDeleted
       ? 'SELECT * FROM teams WHERE owned_by = ? ORDER BY created_at DESC'
       : 'SELECT * FROM teams WHERE owned_by = ? AND deleted_at IS NULL ORDER BY created_at DESC';
-    return getDb().prepare(sql).all(ownerId);
+    return getDb().prepare(sql).all(owner_id);
   },
 
   /**
@@ -88,28 +88,28 @@ export const teamRepo = {
 
   /**
    * Checks existence of a team by its unique invite code.
-   * @param { string } inviteCode team invite code
+   * @param { string } invite_code team invite code
    * @returns { boolean } true if team exists | false otherwise
    */
-  existsByInviteCode(inviteCode) {
+  existsByInviteCode(invite_code) {
     const row = getDb()
       .prepare('SELECT 1 FROM teams WHERE invite_code = ? LIMIT 1')
-      .get(inviteCode);
+      .get(invite_code);
     return row !== undefined;
   },
 
   /**
    * Counts active (non-soft-deleted) teams owned by a given user. Useful for the
    * service layer to enforce the "resolve owned teams before account deletion" policy.
-   * @param { number } ownerId user id of the team owner
+   * @param { number } owner_id user id of the team owner
    * @returns { number } count of active owned teams
    */
-  countActiveByOwner(ownerId) {
+  countActiveByOwner(owner_id) {
     const row = getDb()
       .prepare(
         'SELECT COUNT(*) AS n FROM teams WHERE owned_by = ? AND deleted_at IS NULL',
       )
-      .get(ownerId);
+      .get(owner_id);
     return row.n;
   },
 
@@ -154,7 +154,7 @@ export const teamRepo = {
    * @param { string } newInviteCode the replacement invite code
    * @returns {object | undefined} updated row | undefined if not found
    */
-  rotateInviteCode(id, newInviteCode) {
+  rotateInviteCode(id, new_invite_code) {
     getDb()
       .prepare(
         `
@@ -163,7 +163,7 @@ export const teamRepo = {
             WHERE id = ?
         `,
       )
-      .run(newInviteCode, repoUtil.now(), id);
+      .run(new_invite_code, repoUtil.now(), id);
 
     return this.findById(id, { includeDeleted: true });
   },
@@ -171,10 +171,10 @@ export const teamRepo = {
   /**
    * Deactivate a team and schedule hard-deletion after killAfter. Rows related to the team are unaffected.
    * @param {number} id team id
-   * @param {string} killAfter ISO-8601 timestamp string
+   * @param {string} kill_after ISO-8601 timestamp string
    * @returns {object | undefined } the soft-deleted row | undefined if not found
    */
-  softDelete(id, killAfter) {
+  softDelete(id, kill_after) {
     const ts = repoUtil.now();
     getDb()
       .prepare(
@@ -186,7 +186,7 @@ export const teamRepo = {
             WHERE id = ? AND deleted_at IS NULL
         `,
       )
-      .run(ts, killAfter, ts, id);
+      .run(ts, kill_after, ts, id);
 
     return this.findById(id, { includeDeleted: true });
   },

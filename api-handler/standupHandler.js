@@ -26,13 +26,14 @@ export async function handleGetStandups(req, res) {
 export async function handlePostStandup(req, res, body) {
   try {
     // 1. Parsing and basic validation
-    const { name, done, todo, blockers } = body;
+    const { name, done, todo, blockers, statusFlag } = body;
 
-    if (!name || !done || !todo) {
+    if (!name || !done || !todo || !statusFlag) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
       res.end(
         JSON.stringify({
-          error: 'Missing required fields: name, done, and todo are required.',
+          error:
+            'Missing required fields: name, done, todo, and statusFlag are required.',
         }),
       );
       return;
@@ -44,6 +45,7 @@ export async function handlePostStandup(req, res, body) {
       done,
       todo,
       blockers,
+      statusFlag,
     });
 
     // 3. HTTP Response

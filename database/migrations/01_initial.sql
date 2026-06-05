@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS standups (
     blocker_resolved INTEGER NOT NULL DEFAULT 0 CHECK (blocker_resolved IN (0, 1)), -- so blocker content can still be displayed (i.e. crossed out) after resolution
     status_flag     TEXT    NOT NULL DEFAULT 'In progress' CHECK (status_flag IN ('In progress', 'On track')), /* If blocked_by is not null and blocker_resolved = 0 */
     created_at      TEXT    NOT NULL,                                                                          /* then status_flag is overwritten by the blocker and will resolve to 'Blocked' */
-    updated_at      TEXT    NOT NULL,                                                                          /* before exiting the data repository */
+    updated_at      TEXT    NOT NULL,                                                                          /* upon exiting the data repository. Underlying status flag remains. */
     kill_after      TEXT    NULL,                                                                           
     -- can only resolve if there's a blocker to resolve
     CHECK(

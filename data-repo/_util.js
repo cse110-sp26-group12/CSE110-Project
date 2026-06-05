@@ -4,11 +4,15 @@ export const repoUtil = {
     return new Date().toISOString();
   },
 
-  /** Returns true if a string is null or empty, false otherwise.
-   * @param { string } text
+  /** Returns true if a blocker string is considered an active blocker, false otherwise.
+   * @param { string } blocker
    */
-  isNullStr(str) {
-    return str === null || str === '';
+  isBlocker(str) {
+    if (str === null || str === undefined) {
+      return false;
+    } else {
+      return str !== '' && str.toLowerCase() !== 'none';
+    }
   },
 
   /**
@@ -20,7 +24,7 @@ export const repoUtil = {
   exportStandup(row) {
     if (row === undefined) return row;
 
-    if (!this.isNullStr(row.blocked_by) && row.blocker_resolved === 0)
+    if (this.isBlocker(row.blocked_by) && row.blocker_resolved === 0)
       row.status_flag = 'Blocked'; //Blocker overrides status flag
 
     return row;

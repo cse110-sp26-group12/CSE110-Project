@@ -43,11 +43,11 @@ export const standupRepo = {
   }) {
     if (!STATUS_FLAGS.includes(status_flag)) {
       throw new Error(
-        `Invalid incoming status_flag: ${status_flag}. Must be one of: ${STATUS_FLAGS.join(', ')}`,
+        `Invalid status_flag insertion: ${status_flag}. Must be one of: ${STATUS_FLAGS.join(', ')}`,
       );
     }
     const ts = repoUtil.now();
-    const blocker_resolved = 0; //implicit on creation
+    const blocker_resolved = 0; //implicitly false on creation
     const result = getDb()
       .prepare(
         `
@@ -89,12 +89,12 @@ export const standupRepo = {
    * @param { number } offset (default 0)
    * @returns {object[]}
    */
-  listByTeam(teamId, { limit = 100, offset = 0 } = {}) {
+  listByTeam(team_id, { limit = 100, offset = 0 } = {}) {
     return getDb()
       .prepare(
         'SELECT * FROM standups WHERE for_team = ? ORDER BY created_at DESC LIMIT ? OFFSET ?',
       )
-      .all(teamId, limit, offset)
+      .all(team_id, limit, offset)
       .map((r) => repoUtil.exportStandup(r));
   },
 
@@ -105,24 +105,24 @@ export const standupRepo = {
    * @param { number } offset (default 0)
    * @returns {object[]}
    */
-  listByPoster(membershipId, { limit = 100, offset = 0 } = {}) {
+  listByPoster(member_id, { limit = 100, offset = 0 } = {}) {
     return getDb()
       .prepare(
         'SELECT * FROM standups WHERE posted_by = ? ORDER BY created_at DESC LIMIT ? OFFSET ?',
       )
-      .all(membershipId, limit, offset)
+      .all(member_id, limit, offset)
       .map((r) => repoUtil.exportStandup(r));
   },
 
   /**
    * Lists standups for a team created within an inclusive ISO timestamp range,
    * newest first. Useful for "today's standups" / date-bounded views.
-   * @param { number } teamId team id
+   * @param { number } team_id
    * @param { string } startIso inclusive lower bound (ISO-8601)
    * @param { string } endIso inclusive upper bound (ISO-8601)
-   * @returns {object[]}
+   * @returns {object[]} list of standups within the given timeframe
    */
-  listByTeamInRange(teamId, startIso, endIso) {
+  listByTeamInRange(team_id, start_iso, end_iso) {
     return getDb()
       .prepare(
         `
@@ -133,7 +133,7 @@ export const standupRepo = {
             ORDER BY created_at DESC
         `,
       )
-      .all(teamId, startIso, endIso)
+      .all(team_id, start_iso, end_iso)
       .map((r) => repoUtil.exportStandup(r));
   },
 
@@ -141,13 +141,14 @@ export const standupRepo = {
    * Lists a team's blocker standups (including resovled by default), newest first.
    * Resolved blockers are included by default so the UI can show them as resolved.
    * Each row carries blocker_resolved (0/1) for display logic.
-   * @param { number } teamId team id
+   * @param { number } team_id
    * @param { bool } includeResolved include resolved blockers in the list
    * @param { number } limit (default 100)
    * @param { number } offset (default 0)
+   * @returns { object[] } list of blocked standups
    */
   listBlockersByTeam(
-    teamId,
+    team_id,
     { includeResolved = true, limit = 100, offset = 0 } = {},
   ) {
     const resolvedClause = includeResolved ? '' : 'AND blocker_resolved = 0';
@@ -158,26 +159,28 @@ export const standupRepo = {
             WHERE for_team = ?
               AND blocked_by IS NOT NULL
               AND blocked_by != ''
+              AND blocked_by != 'none'
               ${resolvedClause}
             ORDER BY created_at DESC
             LIMIT ? OFFSET ?
         `,
       )
-      .all(teamId, limit, offset)
+      .all(team_id, limit, offset)
       .map((r) => repoUtil.exportStandup(r));
   },
 
   /**
-   * Lists a team's blocker standups (including resolved by default), newest first.
+   * Lists a member's blocker standups (including resolved by default), newest first.
    * Resolved blockers are included by default so the UI can show them as resolved.
    * Each row carries blocker_resolved (0/1) for display logic.
-   * @param { number } membershipId team_members.id of the poster
+   * @param { number } member_id
+   * @param { bool } includeResolved include resolved blockers in the list
    * @param { number } limit (default 100)
    * @param { number } offset (default 0)
    * @returns {object[]} standups with a populated blocked_by
    */
   listBlockersByPoster(
-    membershipId,
+    member_id,
     { includeResolved = true, limit = 100, offset = 0 } = {},
   ) {
     const resolvedClause = includeResolved ? '' : 'AND blocker_resolved = 0';
@@ -188,33 +191,83 @@ export const standupRepo = {
             WHERE posted_by = ?
               AND blocked_by IS NOT NULL
               AND blocked_by != ''
+              AND blocked_by != 'none'
               ${resolvedClause}
             ORDER BY created_at DESC
             LIMIT ? OFFSET ?
         `,
       )
-      .all(membershipId, limit, offset)
+      .all(member_id, limit, offset)
+      .map((r) => repoUtil.exportStandup(r));
+  },
+
+  /**
+   * Lists a team's non-blocked standups of a given status, newest first.
+   * @param { number } team_id
+   * @param { bool } status_flag
+   * @param { number } limit (default 100)
+   * @param { number } offset (default 0)
+   * @returns { object[] } list of non-blocked standups of a given status
+   */
+  listStatusByTeam(team_id, status_flag, { limit = 100, offset = 0 } = {}) {
+    return getDb()
+      .prepare(
+        `
+            SELECT * FROM standups
+            WHERE for_team = ?
+              AND status_flag = ? 
+              AND (blocked_by IS NULL OR blocked_by = '' OR blocker_resolved = 1)
+            ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+        `,
+      )
+      .all(team_id, status_flag, limit, offset)
+      .map((r) => repoUtil.exportStandup(r));
+  },
+
+  /**
+   * Lists a member's non-blocked standups of a given status, newest first.
+   * @param { number } member_id
+   * @param { bool } status_flag
+   * @param { number } limit (default 100)
+   * @param { number } offset (default 0)
+   * @returns { object[] } list of non-blocked standups of given status
+   */
+  listStatusByPoster(member_id, status_flag, { limit = 100, offset = 0 } = {}) {
+    return getDb()
+      .prepare(
+        `
+            SELECT * FROM standups
+            WHERE posted_by = ?
+              AND status_flag = ? 
+              AND (blocked_by IS NULL OR blocked_by = '' OR blocker_resolved = 1)
+            ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+        `,
+      )
+      .all(member_id, status_flag, limit, offset)
       .map((r) => repoUtil.exportStandup(r));
   },
 
   /**
    * Counts standups for a team.
-   * @param { number } teamId team id
+   * @param { number } team_id
    * @returns { number } count of standups
    */
-  countByTeam(teamId) {
+  countByTeam(team_id) {
     const row = getDb()
       .prepare('SELECT COUNT(*) AS n FROM standups WHERE for_team = ?')
-      .get(teamId);
+      .get(team_id);
     return row.n;
   },
 
   /**
    * Counts active blockers for a team. A standup is a "blocker" when blocked_by is a non-empty string.
-   * @param { number } teamId team id
+   * @param { number } team_id
+   * @param { string } status_flag
    * @returns { number } count of standups with a populated and unresolved blocked_by
    */
-  countActiveBlockersByTeam(teamId) {
+  countActiveBlockersByTeam(team_id) {
     const row = getDb()
       .prepare(
         `
@@ -222,26 +275,59 @@ export const standupRepo = {
             WHERE for_team = ?
               AND blocked_by IS NOT NULL
               AND blocked_by != ''
+              AND blocked_by != 'none'
               AND blocker_resolved = 0
         `,
       )
-      .get(teamId);
+      .get(team_id);
+    return row.n;
+  },
+
+  /**
+   * Counts the number of non-blocker standups that fall under the given status flag.
+   * @param {*} team_id
+   * @param {*} status_flag
+   * @returns { number} count of non-blocked standups of the given status
+   */
+  countStatusByTeam(team_id, status_flag) {
+    if (!STATUS_FLAGS.includes(status_flag)) {
+      throw new Error(
+        `Invalid status_flag request: ${status_flag}. Must be one of: ${STATUS_FLAGS.join(', ')}`,
+      );
+    }
+
+    const row = getDb()
+      .prepare(
+        `
+            SELECT COUNT(*) AS n FROM standups
+            WHERE for_team = ?
+              AND status_flag = ?
+              AND (blocked_by IS NULL OR blocked_by = '' OR blocker_resolved = 1)
+        `,
+      )
+      .get(team_id, status_flag);
     return row.n;
   },
 
   /**
    * Updates mutable standup content fields. Updates updated_at.
    *  Ignores non-whitelisted keys. If no valid keys are given, the unmodified row is returned.
-   *  Note: a key present with a null value IS applied (e.g. clearing blocked_by).
+   *  Note: a key present with a null value IS applied (e.g. clearing blocked_by). Clearing blocked_by vacuously resolves any attached blocker.
    * @param { number } id standup id
    * @param { object } updates subset of { worked_on, will_work_on, blocked_by, status_flag (`"In progress"` OR `"On track"`) }; all other keys are ignored
    * @returns {object | undefined} updated row | undefined if not found
    */
   update(id, updates) {
-    if (
-      Object.prototype.hasOwnProperty.call(updates, 'status_flag') &&
-      !STATUS_FLAGS.includes(updates.status_flag)
-    ) {
+    const updateStatus = Object.prototype.hasOwnProperty.call(
+      updates,
+      'status_flag',
+    );
+    const updateBlocker = Object.prototype.hasOwnProperty.call(
+      updates,
+      'blocked_by',
+    );
+
+    if (updateStatus && !STATUS_FLAGS.includes(updates.status_flag)) {
       throw new Error(
         `Invalid status_flag: ${updates.status_flag}. Must be one of: ${STATUS_FLAGS.join(', ')}`,
       );
@@ -256,8 +342,19 @@ export const standupRepo = {
       return repoUtil.exportStandup(row);
     }
 
-    const setClause = fields.map((f) => `${f} = ?`).join(', ');
+    let setClause = fields.map((f) => `${f} = ?`).join(', ');
     const values = fields.map((f) => updates[f]);
+
+    if (updateBlocker) {
+      const oldRow = this.findById(id);
+      if (
+        !repoUtil.isBlocker(updates.blocked_by) &&
+        oldRow.blocker_resolved === 1
+      ) {
+        setClause += ', blocker_resolved = 0'; //empty blocker resolution is vacuous
+      }
+    }
+
     values.push(repoUtil.now());
     values.push(id);
 
@@ -291,6 +388,7 @@ export const standupRepo = {
             WHERE id = ?
               AND blocked_by IS NOT NULL
               AND blocked_by != ''
+              AND blocked_by != 'none'
         `,
       )
       .run(repoUtil.now(), id);

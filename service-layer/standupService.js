@@ -117,6 +117,7 @@ function toFrontendStandup(row, poster) {
     todo: row.will_work_on || '',
     blockers: row.blocked_by || 'none',
     submittedAt: row.created_at,
+    statusFlag: row.status_flag,
   };
 }
 
@@ -134,6 +135,7 @@ export function createStandupService(
       const done = normalizeRequiredText(data.done, 'done');
       const todo = normalizeRequiredText(data.todo, 'todo');
       const blockers = normalizeBlockers(data.blockers);
+      const statusFlag = normalizeRequiredText(data.statusFlag, 'statusFlag');
 
       const team = getOrCreateDemoTeam(repositories);
       const member = getOrCreateDemoMembership(repositories, name);
@@ -143,6 +145,7 @@ export function createStandupService(
         worked_on: done,
         will_work_on: todo,
         blocked_by: blockers === 'none' ? null : blockers,
+        status_flag: statusFlag,
       });
 
       return toFrontendStandup(row, member);

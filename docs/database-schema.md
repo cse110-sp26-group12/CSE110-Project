@@ -84,13 +84,14 @@ Shape of a standup entry as produced by `createStandup` in `src/standup.js` and 
 
 ##### Fields
 
-| Field       | Type    | Description                                                                          |
-| ----------- | ------- | ------------------------------------------------------------------------------------ |
-| `posted_by` | integer | ID of the _team member_ who submitted the standup **[given by client]**              |
-| `for_team`  | integer | ID of the team where the standup was submitted **[given by client]**                 |
-| `done`      | string  | Summary of what they finished since the last standup or `"none"` **[given by user]** |
-| `todo`      | string  | What they plan to work on next or `"none"` **[given by user]**                       |
-| `blockers`  | string  | Anything blocking them, or `"none"` **[given by user]**                              |
+| Field         | Type    | Description                                                                                                                                                                                         |
+| ------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `posted_by`   | integer | ID of the _team member_ who submitted the standup **[given by client]**                                                                                                                             |
+| `for_team`    | integer | ID of the team where the standup was submitted **[given by client]**                                                                                                                                |
+| `done`        | string  | Summary of what they finished since the last standup or `"none"` **[given by user]**                                                                                                                |
+| `todo`        | string  | What they plan to work on next or `"none"` **[given by user]**                                                                                                                                      |
+| `blockers`    | string  | Anything blocking them, or `"none"` **[given by user]**                                                                                                                                             |
+| `status_flag` | string  | The current status of the standup (i.e. 'In Progress'). 'Blocked' will _not_ be accepted here; it is determined by the server and overrides this flag when a blocker is active. **[given by user]** |
 
 All fields are required. Parsing and type validation will be handled at the API layer.
 
@@ -102,7 +103,8 @@ All fields are required. Parsing and type validation will be handled at the API 
   "for_team": 66,
   "done": "Finished frontend layout",
   "todo": "Working on JSON parser",
-  "blockers": "None"
+  "blockers": "None",
+  "status_flag": "In progress"
 }
 ```
 

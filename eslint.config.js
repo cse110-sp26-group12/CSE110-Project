@@ -49,6 +49,7 @@ export default [
         alert: 'readonly',
         fetch: 'readonly',
         window: 'readonly',
+        location: 'readonly',
       }
     }
   }

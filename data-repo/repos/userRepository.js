@@ -147,10 +147,10 @@ export const userRepo = {
   /**
    * Deactivate user and schedule hard-deletion after killAfter. Rows related to the user are unaffected.
    * @param {number} id user id
-   * @param {string} killAfter ISO-8601 timestamp string
+   * @param {string} kill_after ISO-8601 timestamp string
    * @returns {object | undefined } the soft-deleted row | undefined if not found
    */
-  softDelete(id, killAfter) {
+  softDelete(id, kill_after) {
     const ts = repoUtil.now();
     getDb()
       .prepare(
@@ -162,7 +162,7 @@ export const userRepo = {
             WHERE id = ? AND deleted_at IS NULL
         `,
       )
-      .run(ts, killAfter, ts, id);
+      .run(ts, kill_after, ts, id);
 
     return this.findById(id, { includeDeleted: true });
   },

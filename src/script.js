@@ -58,21 +58,29 @@ let totalInProgress = 0;
 
 submitBtn.addEventListener('click', async () => {
   const name = document.getElementById('su-name').value.trim();
-  const status = document.getElementById('su-status').value;
+  let internalStatus = document.getElementById('su-status').value;
+  let displayedStatus = internalStatus;
   const yesterday = document.getElementById('su-yesterday').value.trim();
   const today = document.getElementById('su-today').value.trim();
   const blockers = document.getElementById('su-blockers').value.trim();
+
+  if (internalStatus == 'Blocked') internalStatus = 'In progress'; //'Blocked' is an overlay over the internal status; actual blockage status is determined by the server
 
   if (!name || !yesterday || !today) {
     alert("Please fill out your name, yesterday's work, and today's plan.");
     return;
   }
-
   try {
     const res = await fetch(`${API}/api/standups`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, done: yesterday, todo: today, blockers }),
+      body: JSON.stringify({
+        name,
+        done: yesterday,
+        todo: today,
+        blockers,
+        statusFlag: internalStatus,
+      }),
     });
 
     if (!res.ok) {
@@ -84,16 +92,21 @@ submitBtn.addEventListener('click', async () => {
     emptyState.style.display = 'none';
 
     let statusClass = 'done';
-    if (status === 'In progress') {
+    if (standup.blockers && standup.blockers.toLowerCase() !== 'none') {
+      //blocker truth overrides selected flag
+      displayedStatus = 'Blocked';
+      statusClass = 'blocker';
+      totalBlockers++;
+    } else if (
+      displayedStatus === 'Blocked' ||
+      displayedStatus === 'In progress'
+    ) {
+      //false blocker is also overridden (default to 'In progress')
+      displayedStatus = 'In progress';
       statusClass = 'progress';
       totalInProgress++;
-    } else if (status === 'Blocked') {
-      statusClass = 'blocker';
     }
 
-    if (standup.blockers && standup.blockers.toLowerCase() !== 'none') {
-      totalBlockers++;
-    }
     totalSubmissions++;
 
     const card = document.createElement('article');
@@ -104,7 +117,7 @@ submitBtn.addEventListener('click', async () => {
         <h3 class="person">${escapeHtml(standup.name)}</h3>
         <p class="role">Team Member</p>
       </div>
-      <span class="status ${statusClass}">${escapeHtml(status)}</span>
+      <span class="status ${statusClass}">${escapeHtml(displayedStatus)}</span>
     </div>
     <div class="standup-section">
       <strong>Yesterday</strong>
@@ -303,13 +316,20 @@ async function loadExistingStandups() {
       emptyState.style.display = 'none';
     }
 
+    let statusText;
+    let statusClass;
     standups.reverse().forEach((standup) => {
-      let statusClass = 'done';
-      let statusText = 'On track';
-
-      if (standup.blockers && standup.blockers.toLowerCase() !== 'none') {
-        statusClass = 'blocker';
+      const displayedStatus = standup.statusFlag;
+      if (displayedStatus == 'On track') {
+        statusText = 'On track'; //Literals in case we ever want to differentiate displayed text from stored flag
+        statusClass = 'done';
+      } else if (displayedStatus == 'In progress') {
+        statusText = 'In progress';
+        statusClass = 'progress';
+        totalInProgress++;
+      } else {
         statusText = 'Blocked';
+        statusClass = 'blocker';
         totalBlockers++;
       }
 

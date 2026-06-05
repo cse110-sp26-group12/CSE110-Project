@@ -55,7 +55,9 @@ Table standups {
   for_team integer [not null]
   worked_on string [null]
   will_work_on string [null]
-  blockers string [null]
+  blocked_by string [null]
+  blocker_resolved bool [not null]
+  status_flag enum [not null]
   created_at timestamp [default: 'Now()']
   kill_after timestamp [not null, note: 'Could be a configuration for check-ins to be deleted or not after a certain time past creation, as dictated by team administrator']
 }

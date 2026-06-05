@@ -56,84 +56,84 @@ export const teamMemberRepo = {
   /**
    * Finds a membership by the user/team pair (the table's natural key). Call this to check for former team
    * membership before creating a new row.
-   * @param { number } userId user id
-   * @param { number } teamId team id
+   * @param { number } user_id
+   * @param { number } team_id
    * @param { boolean } includeFormer include rows where the member has left (default false)
    * @returns {object | undefined } membership row if found | undefined otherwise
    */
-  findByUserAndTeam(userId, teamId, { includeFormer = false } = {}) {
+  findByUserAndTeam(user_id, team_id, { includeFormer = false } = {}) {
     const sql = includeFormer
       ? 'SELECT * FROM team_members WHERE user_id = ? AND team_id = ?'
       : 'SELECT * FROM team_members WHERE user_id = ? AND team_id = ? AND left_at IS NULL';
-    return getDb().prepare(sql).get(userId, teamId);
+    return getDb().prepare(sql).get(user_id, team_id);
   },
 
   /**
    * Lists memberships for a team, oldest-joined first.
-   * @param { number } teamId team id
+   * @param { number } team_id
    * @param { boolean } includeFormer include rows where the member has left (default false)
    * @returns {object[]}
    */
-  listByTeam(teamId, { includeFormer = false } = {}) {
+  listByTeam(team_id, { includeFormer = false } = {}) {
     const sql = includeFormer
       ? 'SELECT * FROM team_members WHERE team_id = ? ORDER BY joined_at ASC'
       : 'SELECT * FROM team_members WHERE team_id = ? AND left_at IS NULL ORDER BY joined_at ASC';
-    return getDb().prepare(sql).all(teamId);
+    return getDb().prepare(sql).all(team_id);
   },
 
   /**
    * Lists memberships for a user (the teams they belong to), newest-joined first.
-   * @param { number } userId user id
+   * @param { number } user_id
    * @param { boolean } includeFormer include rows where the member has left (default false)
    * @returns {object[]}
    */
-  listByUser(userId, { includeFormer = false } = {}) {
+  listByUser(user_id, { includeFormer = false } = {}) {
     const sql = includeFormer
       ? 'SELECT * FROM team_members WHERE user_id = ? ORDER BY joined_at DESC'
       : 'SELECT * FROM team_members WHERE user_id = ? AND left_at IS NULL ORDER BY joined_at DESC';
-    return getDb().prepare(sql).all(userId);
+    return getDb().prepare(sql).all(user_id);
   },
 
   /**
    * Lists active members of a team holding a given role.
-   * @param { number } teamId team id
+   * @param { number } team_id
    * @param { 'admin' | 'member' } role role to filter by
    * @returns {object[]}
    */
-  listByTeamAndRole(teamId, role) {
+  listByTeamAndRole(team_id, role) {
     return getDb()
       .prepare(
         'SELECT * FROM team_members WHERE team_id = ? AND member_role = ? AND left_at IS NULL ORDER BY joined_at ASC',
       )
-      .all(teamId, role);
+      .all(team_id, role);
   },
 
   /**
    * Checks whether an active membership exists for the user/team pair.
-   * @param { number } userId user id
-   * @param { number } teamId team id
+   * @param { number } user_id
+   * @param { number } team_id
    * @returns { boolean } true if an active membership exists | false otherwise
    */
-  isActiveMember(userId, teamId) {
+  isActiveMember(user_id, team_id) {
     const row = getDb()
       .prepare(
         'SELECT 1 FROM team_members WHERE user_id = ? AND team_id = ? AND left_at IS NULL LIMIT 1',
       )
-      .get(userId, teamId);
+      .get(user_id, team_id);
     return row !== undefined;
   },
 
   /**
    * Counts active members of a team.
-   * @param { number } teamId team id
+   * @param { number } team_id
    * @returns { number } count of active members
    */
-  countActiveByTeam(teamId) {
+  countActiveByTeam(team_id) {
     const row = getDb()
       .prepare(
         'SELECT COUNT(*) AS n FROM team_members WHERE team_id = ? AND left_at IS NULL',
       )
-      .get(teamId);
+      .get(team_id);
     return row.n;
   },
 
