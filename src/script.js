@@ -269,7 +269,8 @@ function createBlockerItem() {
   `;
   item.querySelector('input').addEventListener('change', () => {
     item.remove();
-    if (blockerItemList.children.length === 0) blockerItemEmpty.style.display = '';
+    if (blockerItemList.children.length === 0)
+      blockerItemEmpty.style.display = '';
 
     const resolved = document.createElement('div');
     resolved.classList.add('check-item');

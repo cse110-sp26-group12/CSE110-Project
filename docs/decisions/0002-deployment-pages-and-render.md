@@ -1,6 +1,7 @@
 ---
 
 ## parent: Decisions
+
 nav_order: 2
 title: ADR 0002 - Deployment (GitHub Pages + Render)
 status: accepted
@@ -22,7 +23,7 @@ code and hold the database, and we need to decide how the two halves connect.
 
 A relevant constraint: this is a course project with a relaxed scope. The grading
 artifact is a **video presentation** of the app working, so the deployment only
-has to be reliably working *at presentation time*. It does not need long-term
+has to be reliably working _at presentation time_. It does not need long-term
 durability, high availability, or paid infrastructure to earn a passing grade.
 
 ## Decision Drivers
@@ -61,35 +62,35 @@ cross-origin requests are allowed.
 
 - Good, because the frontend stays on GitHub Pages as expected.
 - Good, because the entire existing backend (SQLite, migrations, repositories,
-service layer) is reused unchanged except for a configurable port and CORS.
+  service layer) is reused unchanged except for a configurable port and CORS.
 - Good, because it is completely free.
 - Good, because all users hit the same Render instance and the same database, so
-standups are shared and persist across page reloads while the service is awake.
+  standups are shared and persist across page reloads while the service is awake.
 - Bad, because the frontend and backend are on different origins, which requires
-CORS handling and an absolute API URL in the frontend.
+  CORS handling and an absolute API URL in the frontend.
 - Bad, because Render's free tier **spins the service down after ~15 minutes of
-inactivity**; the next request triggers a cold start that takes ~30–50 seconds,
-during which the service returns `Not Found` / `no-server` until it is awake.
+  inactivity**; the next request triggers a cold start that takes ~30–50 seconds,
+  during which the service returns `Not Found` / `no-server` until it is awake.
 - Bad, because the free tier has **no persistent disk**, so the SQLite file lives
-on an ephemeral filesystem and **resets on every redeploy and every spin-down**.
+  on an ephemeral filesystem and **resets on every redeploy and every spin-down**.
 - Neutral, because for our scope (a video presentation of the app working) the
-cold start and data reset are acceptable: we warm the service before recording
-and add standups live, so the demo works and meets the requirements for a
-passing grade. Durable, always-on hosting is explicitly out of scope for now.
+  cold start and data reset are acceptable: we warm the service before recording
+  and add standups live, so the demo works and meets the requirements for a
+  passing grade. Durable, always-on hosting is explicitly out of scope for now.
 
 ### Confirmation
 
 This decision is confirmed by the deployed service and the repository config:
 
 - `render.yaml` defines the free web service, build/start commands, and
-`CORS_ORIGIN`.
+  `CORS_ORIGIN`.
 - `server.js` listens on `process.env.PORT` and sets CORS headers + handles the
-`OPTIONS` preflight.
+  `OPTIONS` preflight.
 - `curl https://sitrep-q52s.onrender.com/api/standups` returns JSON (`200`), and a
-`POST` followed by a `GET` returns the submitted standup while the service is
-awake.
+  `POST` followed by a `GET` returns the submitted standup while the service is
+  awake.
 - The frontend, once wired, reaches the backend cross-origin without CORS errors
-(verifiable in the browser Network tab).
+  (verifiable in the browser Network tab).
 
 ## Pros and Cons of the Options
 
@@ -106,12 +107,12 @@ awake.
 ### GitHub Pages frontend + Supabase (hosted Postgres)
 
 - Good, because Supabase's free tier persists data even across restarts (data
-lives off our server).
+  lives off our server).
 - Good, because it removes cold-start data loss.
 - Bad, because it abandons the SQLite backend and layered architecture the team
-already built; the data repositories would need to be rewritten for Postgres.
+  already built; the data repositories would need to be rewritten for Postgres.
 - Bad, because it introduces a new external service/account and SQL-dialect
-differences (`datetime('now')` → `now()`, `AUTOINCREMENT` → `bigserial`).
+  differences (`datetime('now')` → `now()`, `AUTOINCREMENT` → `bigserial`).
 - Neutral, because for a one-week demo the extra durability is not required.
 
 ### Host everything on Render, skip GitHub Pages
@@ -125,17 +126,17 @@ differences (`datetime('now')` → `now()`, `AUTOINCREMENT` → `bigserial`).
 
 - Good, because it needs no backend or hosting at all.
 - Bad, because data is per-browser and **not shared** — teammates would never see
-each other's standups, which defeats the purpose of the app.
+  each other's standups, which defeats the purpose of the app.
 - Bad, because it does not exercise the backend the team built.
 
 ### Render with a paid persistent disk
 
 - Good, because the SQLite file would survive redeploys and spin-downs (true
-durable persistence).
+  durable persistence).
 - Bad, because persistent disks require a **paid** instance, which violates our
-"must be free" driver.
+  "must be free" driver.
 - Neutral, because durability is unnecessary for the presentation; this is a good
-future upgrade if the project needs to run continuously.
+  future upgrade if the project needs to run continuously.
 
 ## More Information
 
@@ -153,4 +154,3 @@ Relevant files and resources:
 - `server.js` — `process.env.PORT`, CORS headers, `OPTIONS` preflight, migrations on boot
 - `database/connection.js`, `database/migrate.js` — SQLite connection + migrations
 - Live backend: `https://sitrep-q52s.onrender.com`
-

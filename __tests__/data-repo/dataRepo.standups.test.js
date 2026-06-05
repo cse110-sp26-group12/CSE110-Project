@@ -65,13 +65,14 @@ describe('standupRepo', () => {
                            worked_on = 'did stuff', will_work_on = 'will do stuff',
                            blocked_by = null,
                            blocker_resolved = 0,
+                           status_flag = 'In progress',
                            created_at = '2026-01-01T00:00:00.000Z',
                            updated_at = '2026-01-01T00:00:00.000Z',
                            kill_after = null }) {
         const result = db.prepare(`
-            INSERT INTO standups (posted_by, for_team, worked_on, will_work_on, blocked_by, blocker_resolved, created_at, updated_at, kill_after)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).run(posted_by, for_team, worked_on, will_work_on, blocked_by, blocker_resolved, created_at, updated_at, kill_after);
+            INSERT INTO standups (posted_by, for_team, worked_on, will_work_on, blocked_by, blocker_resolved, status_flag, created_at, updated_at, kill_after)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(posted_by, for_team, worked_on, will_work_on, blocked_by, blocker_resolved, status_flag, created_at, updated_at, kill_after);
         return Number(result.lastInsertRowid);
     }
 
@@ -156,56 +157,6 @@ describe('standupRepo', () => {
             expect(() => {
                 standupRepo.create({ posted_by: membershipId, for_team: 99999 });
             }).toThrow(/FOREIGN KEY/i);
-        });
-
-        it('defaults blocker_resolved to 0 when omitted', () => {
-            const { membershipId, teamId } = setupPosterAndTeam();
-            const s = standupRepo.create({
-                posted_by: membershipId, for_team: teamId, blocked_by: 'stuck on X',
-            });
-            expect(s.blocker_resolved).toBe(0);
-        });
-
-        it('stores blocker_resolved as 1 when created resolved with a blocker', () => {
-            const { membershipId, teamId } = setupPosterAndTeam();
-            const s = standupRepo.create({
-                posted_by: membershipId, for_team: teamId,
-                blocked_by: 'was blocked', blocker_resolved: true,
-            });
-            expect(s.blocker_resolved).toBe(1);
-        });
-
-        it('coerces a boolean blocker_resolved to integer 0/1', () => {
-            const { membershipId, teamId } = setupPosterAndTeam();
-            const sFalse = standupRepo.create({
-                posted_by: membershipId, for_team: teamId, blocked_by: 'b', blocker_resolved: false,
-            });
-            const sTrue = standupRepo.create({
-                posted_by: membershipId, for_team: teamId, blocked_by: 'b2', blocker_resolved: true,
-            });
-            expect(sFalse.blocker_resolved).toBe(0);
-            expect(sTrue.blocker_resolved).toBe(1);
-        });
-
-        it('throws when created resolved without a blocker (CHECK violation)', () => {
-            const { membershipId, teamId } = setupPosterAndTeam();
-            // resolved = true with no blocker content violates the cross-field CHECK
-            expect(() => {
-                standupRepo.create({
-                    posted_by: membershipId, for_team: teamId,
-                    blocked_by: null, blocker_resolved: true,
-                });
-            }).toThrow(/CHECK/);
-        });
-
-        it('throws when created resolved with an empty-string blocker (CHECK violation)', () => {
-            const { membershipId, teamId } = setupPosterAndTeam();
-            expect(() => {
-                standupRepo.create({
-                    posted_by: membershipId, for_team: teamId,
-                    blocked_by: '', blocker_resolved: true,
-                });
-            }).toThrow(/CHECK/);
         });
     });
 
@@ -855,6 +806,163 @@ describe('standupRepo', () => {
             const id = seedStandup({ posted_by: membershipId, for_team: teamId, blocked_by: 'stuck', blocker_resolved: 0 });
             const updated = standupRepo.unresolveBlocker(id);
             expect(updated.blocker_resolved).toBe(0);
+        });
+    });
+
+    // ---- status_flag behavior -------------------------------------------
+
+    describe('status_flag', () => {
+        // --- input restrictions (create) ---
+
+        it('defaults to "In progress" when omitted on create', () => {
+            const { membershipId, teamId } = setupPosterAndTeam();
+            const s = standupRepo.create({ posted_by: membershipId, for_team: teamId });
+            expect(s.status_flag).toBe('In progress');
+        });
+
+        it('accepts a valid status_flag on create', () => {
+            const { membershipId, teamId } = setupPosterAndTeam();
+            const s = standupRepo.create({
+                posted_by: membershipId, for_team: teamId, status_flag: 'On track',
+            });
+            expect(s.status_flag).toBe('On track');
+        });
+
+        it('throws on create when status_flag is not an allowed value', () => {
+            const { membershipId, teamId } = setupPosterAndTeam();
+            expect(() => {
+                standupRepo.create({
+                    posted_by: membershipId, for_team: teamId, status_flag: 'Done',
+                });
+            }).toThrow(/status_flag/i);
+        });
+
+        it('throws on create when status_flag is "Blocked" (an outgoing-only overlay, never stored)', () => {
+            const { membershipId, teamId } = setupPosterAndTeam();
+            // 'Blocked' is applied on the way out, never persisted — passing it in is invalid.
+            expect(() => {
+                standupRepo.create({
+                    posted_by: membershipId, for_team: teamId, status_flag: 'Blocked',
+                });
+            }).toThrow(/status_flag/i);
+        });
+
+        // --- input restrictions (update) ---
+
+        it('accepts a valid status_flag on update', () => {
+            const { membershipId, teamId } = setupPosterAndTeam();
+            const id = seedStandup({ posted_by: membershipId, for_team: teamId, status_flag: 'In progress' });
+            const updated = standupRepo.update(id, { status_flag: 'On track' });
+            expect(updated.status_flag).toBe('On track');
+        });
+
+        it('throws on update when status_flag is not an allowed value', () => {
+            const { membershipId, teamId } = setupPosterAndTeam();
+            const id = seedStandup({ posted_by: membershipId, for_team: teamId });
+            expect(() => {
+                standupRepo.update(id, { status_flag: 'Done' });
+            }).toThrow(/status_flag/i);
+        });
+
+        it('throws on update when status_flag is "Blocked"', () => {
+            const { membershipId, teamId } = setupPosterAndTeam();
+            const id = seedStandup({ posted_by: membershipId, for_team: teamId });
+            expect(() => {
+                standupRepo.update(id, { status_flag: 'Blocked' });
+            }).toThrow(/status_flag/i);
+        });
+
+        it('persists only the stored value, never the "Blocked" overlay', () => {
+            const { membershipId, teamId } = setupPosterAndTeam();
+            // An active blocker — its returned status_flag will be 'Blocked',
+            // but the stored column must remain the underlying 'In progress'.
+            const id = seedStandup({
+                posted_by: membershipId, for_team: teamId,
+                blocked_by: 'stuck', blocker_resolved: 0, status_flag: 'In progress',
+            });
+            standupRepo.update(id, { worked_on: 'changed' });
+
+            const stored = db.prepare('SELECT status_flag FROM standups WHERE id = ?').get(id);
+            expect(stored.status_flag).toBe('In progress'); // overlay never written
+        });
+
+        // --- outgoing overlay: blocker overrides status_flag ---
+
+        it('overlays "Blocked" on a row with an active (unresolved) blocker', () => {
+            const { membershipId, teamId } = setupPosterAndTeam();
+            const s = standupRepo.create({
+                posted_by: membershipId, for_team: teamId,
+                status_flag: 'On track', blocked_by: 'waiting on review',
+            });
+            // Active blocker overrides whatever status_flag was supplied.
+            expect(s.status_flag).toBe('Blocked');
+        });
+
+        it('does NOT overlay "Blocked" once the blocker is resolved', () => {
+            const { membershipId, teamId } = setupPosterAndTeam();
+            const id = seedStandup({
+                posted_by: membershipId, for_team: teamId,
+                status_flag: 'On track', blocked_by: 'was stuck', blocker_resolved: 1,
+            });
+            const row = standupRepo.findById(id);
+            // Resolved blocker → the underlying status_flag shows through again.
+            expect(row.status_flag).toBe('On track');
+        });
+
+        it('does NOT overlay "Blocked" on a standup with no blocker', () => {
+            const { membershipId, teamId } = setupPosterAndTeam();
+            const s = standupRepo.create({
+                posted_by: membershipId, for_team: teamId,
+                status_flag: 'On track', blocked_by: null,
+            });
+            expect(s.status_flag).toBe('On track');
+        });
+
+        it('treats an empty-string blocker as no blocker (no overlay)', () => {
+            const { membershipId, teamId } = setupPosterAndTeam();
+            const id = seedStandup({
+                posted_by: membershipId, for_team: teamId,
+                status_flag: 'In progress', blocked_by: '',
+            });
+            const row = standupRepo.findById(id);
+            // '' is not a real blocker, so no overlay.
+            expect(row.status_flag).toBe('In progress');
+        });
+
+        it('applies the overlay on reads through findById', () => {
+            const { membershipId, teamId } = setupPosterAndTeam();
+            const id = seedStandup({
+                posted_by: membershipId, for_team: teamId,
+                status_flag: 'In progress', blocked_by: 'stuck', blocker_resolved: 0,
+            });
+            expect(standupRepo.findById(id).status_flag).toBe('Blocked');
+        });
+
+        it('applies the overlay per-row in list results', () => {
+            const { membershipId, teamId } = setupPosterAndTeam();
+            seedStandup({ posted_by: membershipId, for_team: teamId, worked_on: 'clear',   status_flag: 'On track',    blocked_by: null });
+            seedStandup({ posted_by: membershipId, for_team: teamId, worked_on: 'blocked', status_flag: 'In progress', blocked_by: 'stuck', blocker_resolved: 0 });
+            seedStandup({ posted_by: membershipId, for_team: teamId, worked_on: 'fixed',   status_flag: 'On track',    blocked_by: 'was stuck', blocker_resolved: 1 });
+
+            const rows = standupRepo.listByTeam(teamId);
+            const byName = Object.fromEntries(rows.map(r => [r.worked_on, r.status_flag]));
+            expect(byName.clear).toBe('On track');    // no blocker → unchanged
+            expect(byName.blocked).toBe('Blocked');    // active blocker → overlay
+            expect(byName.fixed).toBe('On track');     // resolved blocker → unchanged
+        });
+
+        it('reflects the overlay transition across resolve / unresolve', () => {
+            const { membershipId, teamId } = setupPosterAndTeam();
+            const id = seedStandup({
+                posted_by: membershipId, for_team: teamId,
+                status_flag: 'On track', blocked_by: 'stuck', blocker_resolved: 0,
+            });
+            // Active blocker → Blocked
+            expect(standupRepo.findById(id).status_flag).toBe('Blocked');
+            // Resolve → underlying flag shows through
+            expect(standupRepo.resolveBlocker(id).status_flag).toBe('On track');
+            // Unresolve → Blocked again
+            expect(standupRepo.unresolveBlocker(id).status_flag).toBe('Blocked');
         });
     });
 });

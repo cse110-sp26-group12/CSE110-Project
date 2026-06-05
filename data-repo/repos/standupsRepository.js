@@ -18,12 +18,18 @@ import { repoUtil } from '../_util.js';
  * until it is hard-deleted.
  */
 
-const MUTABLE_FIELDS = ['worked_on', 'will_work_on', 'blocked_by'];
+const MUTABLE_FIELDS = [
+  'worked_on',
+  'will_work_on',
+  'blocked_by',
+  'status_flag',
+];
+const STATUS_FLAGS = ['In progress', 'On track'];
 
 export const standupRepo = {
   /**
    * Creates a new standup.
-   * @param {{ posted_by: number, for_team: number, worked_on?: string|null, will_work_on?: string|null, blocked_by?: string|null, kill_after?: string|null }} data
+   * @param {{ posted_by: number, for_team: number, worked_on?: string|null, will_work_on?: string|null, blocked_by?: string|null, status_flag?: string|null, kill_after?: string|null }} data
    * @returns {object} created standup row
    */
   create({
@@ -32,15 +38,21 @@ export const standupRepo = {
     worked_on = null,
     will_work_on = null,
     blocked_by = null,
-    blocker_resolved = false,
+    status_flag = 'In progress',
     kill_after = null,
   }) {
+    if (!STATUS_FLAGS.includes(status_flag)) {
+      throw new Error(
+        `Invalid incoming status_flag: ${status_flag}. Must be one of: ${STATUS_FLAGS.join(', ')}`,
+      );
+    }
     const ts = repoUtil.now();
+    const blocker_resolved = 0; //implicit on creation
     const result = getDb()
       .prepare(
         `
-            INSERT INTO standups (posted_by, for_team, worked_on, will_work_on, blocked_by, blocker_resolved, created_at, updated_at, kill_after)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO standups (posted_by, for_team, worked_on, will_work_on, blocked_by, blocker_resolved, status_flag, created_at, updated_at, kill_after)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
       )
       .run(
@@ -49,13 +61,15 @@ export const standupRepo = {
         worked_on,
         will_work_on,
         blocked_by,
-        blocker_resolved ? 1 : 0,
+        blocker_resolved,
+        status_flag,
         ts,
         ts,
         kill_after,
       );
 
-    return this.findById(Number(result.lastInsertRowid));
+    const row = this.findById(Number(result.lastInsertRowid));
+    return repoUtil.exportStandup(row);
   },
 
   /**
@@ -64,7 +78,8 @@ export const standupRepo = {
    * @returns {object | undefined } standup row if found | undefined otherwise
    */
   findById(id) {
-    return getDb().prepare('SELECT * FROM standups WHERE id = ?').get(id);
+    const row = getDb().prepare('SELECT * FROM standups WHERE id = ?').get(id);
+    return repoUtil.exportStandup(row);
   },
 
   /**
@@ -79,7 +94,8 @@ export const standupRepo = {
       .prepare(
         'SELECT * FROM standups WHERE for_team = ? ORDER BY created_at DESC LIMIT ? OFFSET ?',
       )
-      .all(teamId, limit, offset);
+      .all(teamId, limit, offset)
+      .map((r) => repoUtil.exportStandup(r));
   },
 
   /**
@@ -94,7 +110,8 @@ export const standupRepo = {
       .prepare(
         'SELECT * FROM standups WHERE posted_by = ? ORDER BY created_at DESC LIMIT ? OFFSET ?',
       )
-      .all(membershipId, limit, offset);
+      .all(membershipId, limit, offset)
+      .map((r) => repoUtil.exportStandup(r));
   },
 
   /**
@@ -116,7 +133,8 @@ export const standupRepo = {
             ORDER BY created_at DESC
         `,
       )
-      .all(teamId, startIso, endIso);
+      .all(teamId, startIso, endIso)
+      .map((r) => repoUtil.exportStandup(r));
   },
 
   /**
@@ -145,7 +163,8 @@ export const standupRepo = {
             LIMIT ? OFFSET ?
         `,
       )
-      .all(teamId, limit, offset);
+      .all(teamId, limit, offset)
+      .map((r) => repoUtil.exportStandup(r));
   },
 
   /**
@@ -174,7 +193,8 @@ export const standupRepo = {
             LIMIT ? OFFSET ?
         `,
       )
-      .all(membershipId, limit, offset);
+      .all(membershipId, limit, offset)
+      .map((r) => repoUtil.exportStandup(r));
   },
 
   /**
@@ -214,16 +234,26 @@ export const standupRepo = {
    *  Ignores non-whitelisted keys. If no valid keys are given, the unmodified row is returned.
    *  Note: a key present with a null value IS applied (e.g. clearing blocked_by).
    * @param { number } id standup id
-   * @param { object } updates subset of { worked_on, will_work_on, blocked_by }; all other keys are ignored
+   * @param { object } updates subset of { worked_on, will_work_on, blocked_by, status_flag (`"In progress"` OR `"On track"`) }; all other keys are ignored
    * @returns {object | undefined} updated row | undefined if not found
    */
   update(id, updates) {
+    if (
+      Object.prototype.hasOwnProperty.call(updates, 'status_flag') &&
+      !STATUS_FLAGS.includes(updates.status_flag)
+    ) {
+      throw new Error(
+        `Invalid status_flag: ${updates.status_flag}. Must be one of: ${STATUS_FLAGS.join(', ')}`,
+      );
+    }
+
     const fields = Object.keys(updates).filter((k) =>
       MUTABLE_FIELDS.includes(k),
     );
 
     if (fields.length === 0) {
-      return this.findById(id);
+      const row = this.findById(id);
+      return repoUtil.exportStandup(row);
     }
 
     const setClause = fields.map((f) => `${f} = ?`).join(', ');
@@ -241,7 +271,8 @@ export const standupRepo = {
       )
       .run(...values);
 
-    return this.findById(id);
+    const row = this.findById(id);
+    return repoUtil.exportStandup(row);
   },
 
   /**
@@ -264,7 +295,9 @@ export const standupRepo = {
       )
       .run(repoUtil.now(), id);
 
-    return this.findById(id);
+    const row = this.findById(id);
+
+    return repoUtil.exportStandup(row);
   },
 
   /**
@@ -283,7 +316,9 @@ export const standupRepo = {
       )
       .run(repoUtil.now(), id);
 
-    return this.findById(id);
+    const row = this.findById(id);
+
+    return repoUtil.exportStandup(row);
   },
 
   /**
@@ -305,7 +340,9 @@ export const standupRepo = {
       )
       .run(killAfter, repoUtil.now(), id);
 
-    return this.findById(id);
+    const row = this.findById(id);
+
+    return repoUtil.exportStandup(row);
   },
 
   /**
@@ -324,7 +361,7 @@ export const standupRepo = {
    * @returns {object[]} standups due for deletion
    */
   listExpiredStandups() {
-    return getDb()
+    return getDb() //these are not intended for client viewing, so no export wrapper is needed
       .prepare(
         `
             SELECT * FROM standups

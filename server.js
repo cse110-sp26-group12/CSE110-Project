@@ -20,7 +20,7 @@ const server = http.createServer(async (req, res) => {
   const url = req.url;
   const method = req.method;
 
-   // --- CORS (let the GitHub Pages frontend call this API cross-origin) ---
+  // --- CORS (let the GitHub Pages frontend call this API cross-origin) ---
   res.setHeader('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');

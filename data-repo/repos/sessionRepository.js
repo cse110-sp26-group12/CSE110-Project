@@ -21,19 +21,25 @@ import { repoUtil } from '../_util.js';
 export const sessionRepo = {
   /**
    * Creates a new session.
-   * @param {{ token: string, user_id: number, expires_at: string, user_agent?: string|null, ip_address?: string|null }} data
+   * @param {{ token_hash: string, user_id: number, expires_at: string, user_agent?: string|null, ip_address?: string|null }} data
    * @returns {object} created session row
    */
-  create({ token, user_id, expires_at, user_agent = null, ip_address = null }) {
+  create({
+    token_hash,
+    user_id,
+    expires_at,
+    user_agent = null,
+    ip_address = null,
+  }) {
     const ts = repoUtil.now();
     const result = getDb()
       .prepare(
         `
-            INSERT INTO user_sessions (token, user_id, created_at, expires_at, user_agent, ip_address)
+            INSERT INTO user_sessions (token_hash, user_id, created_at, expires_at, user_agent, ip_address)
             VALUES (?, ?, ?, ?, ?, ?)
         `,
       )
-      .run(token, user_id, ts, expires_at, user_agent, ip_address);
+      .run(token_hash, user_id, ts, expires_at, user_agent, ip_address);
 
     return this.findById(Number(result.lastInsertRowid));
   },
@@ -50,41 +56,41 @@ export const sessionRepo = {
   /**
    * Finds a session by its opaque token, regardless of revoked/expired state.
    * Returns the raw row even if revoked or expired.
-   * @param { string } token session token
+   * @param { string } token_hash session token
    * @returns {object | undefined } session row if found | undefined otherwise
    */
-  findByToken(token) {
+  findByTokenHash(token_hash) {
     return getDb()
-      .prepare('SELECT * FROM user_sessions WHERE token = ?')
-      .get(token);
+      .prepare('SELECT * FROM user_sessions WHERE token_hash = ?')
+      .get(token_hash);
   },
 
   /**
-   * Finds a session by token ONLY if it is currently valid—neither revoked
+   * Finds a session by token hash ONLY if it is currently valid—neither revoked
    * nor expired. Returns raw row.
-   * @param { string } token session token
+   * @param { string } token_hash session token hash
    * @returns {object | undefined } valid session row | undefined if absent/revoked/expired
    */
-  findValidByToken(token) {
+  findValidByToken(token_hash) {
     return getDb()
       .prepare(
         `
             SELECT * FROM user_sessions
-            WHERE token = ?
+            WHERE token_hash = ?
               AND revoked_at IS NULL
               AND expires_at > ?
         `,
       )
-      .get(token, repoUtil.now());
+      .get(token_hash, repoUtil.now());
   },
 
   /**
    * Lists a user's sessions, newest first.
-   * @param { number } userId user id
+   * @param { number } user_id
    * @param { boolean } onlyValid when true, return only currently-valid sessions (default false)
    * @returns {object[]}
    */
-  listByUser(userId, { onlyValid = false } = {}) {
+  listByUser(user_id, { onlyValid = false } = {}) {
     if (onlyValid) {
       return getDb()
         .prepare(
@@ -96,21 +102,21 @@ export const sessionRepo = {
             ORDER BY created_at DESC
         `,
         )
-        .all(userId, repoUtil.now());
+        .all(user_id, repoUtil.now());
     }
     return getDb()
       .prepare(
         'SELECT * FROM user_sessions WHERE user_id = ? ORDER BY created_at DESC',
       )
-      .all(userId);
+      .all(user_id);
   },
 
   /**
    * Counts a user's currently-valid sessions.
-   * @param { number } userId user id
+   * @param { number } user_id
    * @returns { number } count of valid sessions
    */
-  countValidByUser(userId) {
+  countValidByUser(user_id) {
     const row = getDb()
       .prepare(
         `
@@ -120,7 +126,7 @@ export const sessionRepo = {
               AND expires_at > ?
         `,
       )
-      .get(userId, repoUtil.now());
+      .get(user_id, repoUtil.now());
     return row.n;
   },
 
@@ -145,33 +151,33 @@ export const sessionRepo = {
   },
 
   /**
-   * Revokes a single session by its token (logout when the caller only holds
+   * Revokes a single session by its token hash (logout when the caller only holds
    * the token, not the id). No-op if already revoked.
-   * @param { string } token session token
+   * @param { string } token_hash session token hash
    * @returns {object | undefined} the revoked session row | undefined if not found
    */
-  revokeByToken(token) {
+  revokeByToken(token_hash) {
     getDb()
       .prepare(
         `
             UPDATE user_sessions
             SET revoked_at = ?
-            WHERE token = ? AND revoked_at IS NULL
+            WHERE token_hash = ? AND revoked_at IS NULL
         `,
       )
-      .run(repoUtil.now(), token);
+      .run(repoUtil.now(), token_hash);
 
-    return this.findByToken(token);
+    return this.findByTokenHash(token_hash);
   },
 
   /**
    * Revokes ALL currently-valid sessions for a user (e.g. "log out everywhere",
    * or forced invalidation on password change). Already-revoked sessions are
    * left untouched so their original timestamps are preserved.
-   * @param { number } userId user id
+   * @param { number } user_id
    * @returns { number } count of sessions revoked by this call
    */
-  revokeAllForUser(userId) {
+  revokeAllForUser(user_id) {
     const result = getDb()
       .prepare(
         `
@@ -180,7 +186,7 @@ export const sessionRepo = {
             WHERE user_id = ? AND revoked_at IS NULL
         `,
       )
-      .run(repoUtil.now(), userId);
+      .run(repoUtil.now(), user_id);
     return result.changes;
   },
 
