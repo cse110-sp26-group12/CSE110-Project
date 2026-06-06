@@ -1,8 +1,27 @@
 // ── Helpers ───────────────────────────────────────────────────────────
+
+/**
+ * Base URL for the SE SitRep API.
+ * Resolves to the remote Render deployment when hosted on GitHub Pages,
+ * or falls back to a relative path for local development.
+ *
+ * @constant {string}
+ */
 const API = location.hostname.endsWith('github.io')
   ? 'https://sitrep-q52s.onrender.com'
   : '';
 
+/**
+ * Escapes special HTML characters in a string to prevent XSS injection
+ * when rendering user-submitted standup content into the DOM.
+ *
+ * @param {string} str - Raw user input to sanitize.
+ * @returns {string} HTML-safe version of the input string.
+ *
+ * @example
+ * escapeHtml('<script>alert("xss")</script>');
+ * // Returns '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;'
+ */
 function escapeHtml(str) {
   return str
     .replace(/&/g, '&amp;')
@@ -14,6 +33,16 @@ function escapeHtml(str) {
 
 // ── Tab switching ──────────────────────────────────────────────────────
 
+/**
+ * Initialises SPA-style tab navigation for the SE SitRep dashboard panels
+ * (e.g. Standup, Team Board, Tasks, Blockers).
+ *
+ * Attaches click listeners to every nav link with a `data-page` attribute.
+ * On click, the matching panel is revealed, all others are hidden, and the
+ * active nav link is highlighted.
+ *
+ * @listens click - On `.nav-links a[data-page]` elements.
+ */
 document.querySelectorAll('.nav-links a[data-page]').forEach((link) => {
   link.addEventListener('click', (e) => {
     e.preventDefault();
@@ -35,6 +64,13 @@ document.querySelectorAll('.nav-links a[data-page]').forEach((link) => {
 
 // ── Theme toggle ───────────────────────────────────────────────────────
 
+/**
+ * The theme toggle button element.
+ * Switches the dashboard between light and dark mode for accessibility
+ * and developer preference.
+ *
+ * @type {HTMLButtonElement}
+ */
 const themeToggle = document.getElementById('themeToggle');
 themeToggle.addEventListener('click', () => {
   document.body.classList.toggle('dark');
@@ -45,17 +81,92 @@ themeToggle.addEventListener('click', () => {
 
 // ── Daily StandUp ──────────────────────────────────────────────────────
 
+/**
+ * Button that triggers standup form submission.
+ * @type {HTMLButtonElement}
+ */
 const submitBtn = document.getElementById('submitStandup');
+
+/**
+ * Container element where submitted standup cards are rendered.
+ * @type {HTMLElement}
+ */
 const standupList = document.getElementById('standupList');
+
+/**
+ * Placeholder element shown when no standups have been submitted yet.
+ * @type {HTMLElement}
+ */
 const emptyState = document.getElementById('emptyState');
+
+/**
+ * Displays the total number of standups submitted in the current session.
+ * @type {HTMLElement}
+ */
 const submittedCount = document.getElementById('submittedCount');
+
+/**
+ * Displays the count of team members currently marked as Blocked.
+ * @type {HTMLElement}
+ */
 const blockerCountEl = document.getElementById('blockerCount');
+
+/**
+ * Displays the count of team members currently marked as In Progress.
+ * @type {HTMLElement}
+ */
 const progressCount = document.getElementById('progressCount');
 
+/**
+ * Running total of standup entries submitted during the session.
+ * @type {number}
+ */
 let totalSubmissions = 0;
+
+/**
+ * Running total of standups flagged as Blocked.
+ * Incremented whenever a standup includes a non-empty blocker field.
+ * @type {number}
+ */
 let totalBlockers = 0;
+
+/**
+ * Running total of standups flagged as In Progress.
+ * @type {number}
+ */
 let totalInProgress = 0;
 
+/**
+ * @typedef {Object} StandupPayload
+ * @property {string} name       - The team member's name.
+ * @property {string} done       - Work completed yesterday.
+ * @property {string} todo       - Work planned for today.
+ * @property {string} blockers   - Any impediments blocking progress. Use 'none' if unblocked.
+ * @property {string} statusFlag - Agile status flag: 'On track' | 'In progress' | 'Blocked'.
+ */
+ 
+/**
+ * @typedef {Object} StandupResponse
+ * @property {string} name       - The team member's name as stored by the server.
+ * @property {string} done       - Yesterday's completed work.
+ * @property {string} todo       - Today's planned work.
+ * @property {string} [blockers] - Reported blockers, if any.
+ * @property {string} statusFlag - Server-resolved status: 'On track' | 'In progress' | 'Blocked'.
+ */
+ 
+/**
+ * Handles the submission of a daily standup entry.
+ *
+ * Reads the standup form fields (name, status, yesterday, today, blockers),
+ * applies SE SitRep's blocker-override logic (a standup with any blocker text
+ * is always rendered as 'Blocked' regardless of the selected status flag),
+ * POSTs the entry to the API, then prepends a new standup card to the feed
+ * and updates the summary counters.
+ *
+ * @async
+ * @listens click - On the `#submitStandup` button.
+ * @throws {Error} Displays an alert if the API request fails or required fields are missing.
+ */
 submitBtn.addEventListener('click', async () => {
   const name = document.getElementById('su-name').value.trim();
   let internalStatus = document.getElementById('su-status').value;
@@ -154,11 +265,40 @@ submitBtn.addEventListener('click', async () => {
 
 // ── Team Board ─────────────────────────────────────────────────────────
 
+/**
+ * Button that toggles the add-member input form on the Team Board panel.
+ * @type {HTMLButtonElement}
+ */
 const addMemberBtn = document.getElementById('addMemberBtn');
+
+/**
+ * The collapsible form used to enter a new team member's name.
+ * @type {HTMLElement}
+ */
 const addMemberForm = document.getElementById('addMemberForm');
+
+/**
+ * Text input for the new team member's name.
+ * @type {HTMLInputElement}
+ */
 const memberNameInput = document.getElementById('memberNameInput');
+
+/**
+ * Confirm button that finalises adding a new team member.
+ * @type {HTMLButtonElement}
+ */
 const confirmAddMember = document.getElementById('confirmAddMember');
+
+/**
+ * Container element that holds the rendered list of team member cards.
+ * @type {HTMLElement}
+ */
 const memberList = document.getElementById('memberList');
+
+/**
+ * Placeholder element displayed when the Team Board has no members yet.
+ * @type {HTMLElement}
+ */
 const memberEmpty = document.getElementById('memberEmpty');
 
 addMemberBtn.addEventListener('click', () => {
@@ -166,6 +306,15 @@ addMemberBtn.addEventListener('click', () => {
   if (!addMemberForm.classList.contains('hidden')) memberNameInput.focus();
 });
 
+/**
+ * Adds a new team member to the SE SitRep Team Board.
+ *
+ * Reads the name from `#memberNameInput`, creates a member card with an
+ * avatar initial and a remove button, then appends it to the member list.
+ * Clears and hides the form on completion.
+ *
+ * @returns {void} Returns early if the name input is empty.
+ */
 function addMember() {
   const name = memberNameInput.value.trim();
   if (!name) return;
@@ -198,15 +347,58 @@ memberNameInput.addEventListener('keydown', (e) => {
 
 // ── Tasks ──────────────────────────────────────────────────────────────
 
+/**
+ * Button that toggles the create-task input form.
+ * @type {HTMLButtonElement}
+ */
 const createTaskBtn = document.getElementById('createTaskBtn');
+
+/**
+ * The collapsible form used to enter a new task name.
+ * @type {HTMLElement}
+ */
 const createTaskForm = document.getElementById('createTaskForm');
+
+/**
+ * Text input for the new task's name.
+ * @type {HTMLInputElement}
+ */
 const taskNameInput = document.getElementById('taskNameInput');
+
+/**
+ * Confirm button that finalises task creation.
+ * @type {HTMLButtonElement}
+ */
 const confirmCreateTask = document.getElementById('confirmCreateTask');
+
+/**
+ * Container for active (incomplete) task items.
+ * @type {HTMLElement}
+ */
 const taskList = document.getElementById('taskList');
+
+/**
+ * Placeholder shown when there are no active tasks.
+ * @type {HTMLElement}
+ */
 const taskEmpty = document.getElementById('taskEmpty');
+
+/**
+ * Container for completed task items.
+ * @type {HTMLElement}
+ */
 const completedTaskList = document.getElementById('completedTaskList');
+
+/**
+ * Placeholder shown when there are no completed tasks.
+ * @type {HTMLElement}
+ */
 const completedTaskEmpty = document.getElementById('completedTaskEmpty');
 
+/**
+ * Auto-incrementing counter used to generate unique IDs for task checkboxes.
+ * @type {number}
+ */
 let taskCount = 0;
 
 createTaskBtn.addEventListener('click', () => {
@@ -214,6 +406,15 @@ createTaskBtn.addEventListener('click', () => {
   if (!createTaskForm.classList.contains('hidden')) taskNameInput.focus();
 });
 
+/**
+ * Creates a new task item and adds it to the active task list.
+ *
+ * Each task renders as a labelled checkbox. When checked, the task is
+ * moved to the completed list, supporting a lightweight Agile "done"
+ * workflow without a page reload.
+ *
+ * @returns {void} Returns early if the task name input is empty.
+ */
 function createTask() {
   const name = taskNameInput.value.trim();
   if (!name) return;
@@ -251,15 +452,58 @@ taskNameInput.addEventListener('keydown', (e) => {
 
 // ── Blockers ───────────────────────────────────────────────────────────
 
+/**
+ * Button that toggles the create-blocker input form.
+ * @type {HTMLButtonElement}
+ */
 const createBlockerBtn = document.getElementById('createBlockerBtn');
+
+/**
+ * The collapsible form used to describe a new blocker.
+ * @type {HTMLElement}
+ */
 const createBlockerForm = document.getElementById('createBlockerForm');
+
+/**
+ * Text input for the new blocker's description.
+ * @type {HTMLInputElement}
+ */
 const blockerDescInput = document.getElementById('blockerDescInput');
+
+/**
+ * Confirm button that finalises blocker creation.
+ * @type {HTMLButtonElement}
+ */
 const confirmCreateBlocker = document.getElementById('confirmCreateBlocker');
+
+/**
+ * Container for active (unresolved) blocker items.
+ * @type {HTMLElement}
+ */
 const blockerItemList = document.getElementById('blockerItemList');
+
+/**
+ * Placeholder shown when there are no active blockers — the ideal sprint state.
+ * @type {HTMLElement}
+ */
 const blockerItemEmpty = document.getElementById('blockerItemEmpty');
+
+/**
+ * Container for resolved blocker items.
+ * @type {HTMLElement}
+ */
 const resolvedBlockerList = document.getElementById('resolvedBlockerList');
+
+/**
+ * Placeholder shown when no blockers have been resolved yet.
+ * @type {HTMLElement}
+ */
 const resolvedBlockerEmpty = document.getElementById('resolvedBlockerEmpty');
 
+/**
+ * Auto-incrementing counter used to generate unique IDs for blocker checkboxes.
+ * @type {number}
+ */
 let blockerItemCount = 0;
 
 createBlockerBtn.addEventListener('click', () => {
@@ -267,6 +511,16 @@ createBlockerBtn.addEventListener('click', () => {
   if (!createBlockerForm.classList.contains('hidden')) blockerDescInput.focus();
 });
 
+/**
+ * Creates a new blocker item and adds it to the active blockers list.
+ *
+ * Blockers represent impediments that are preventing sprint progress.
+ * Each blocker renders as a labelled checkbox; checking it marks the
+ * blocker as resolved and moves it to the resolved list, giving the
+ * team a clear view of what's been cleared.
+ *
+ * @returns {void} Returns early if the blocker description input is empty.
+ */
 function createBlockerItem() {
   const desc = blockerDescInput.value.trim();
   if (!desc) return;
@@ -305,6 +559,20 @@ blockerDescInput.addEventListener('keydown', (e) => {
 
 // ── Data Sync: Load Existing Entries ───────────────────────────────────
 
+/**
+ * Fetches and renders all previously submitted standup entries from the
+ * SE SitRep API, restoring the full team status feed on page load.
+ *
+ * Each standup is mapped to an Agile status badge ('On track', 'In progress',
+ * or 'Blocked') and prepended to the standup feed in reverse-chronological
+ * order. The summary counters (submitted, blocked, in-progress) are also
+ * updated to reflect the loaded history.
+ *
+ * @async
+ * @returns {Promise<void>}
+ * @throws {Error} Logs a console error if the fetch request fails; does not
+ *   surface an alert to avoid blocking the user on backend cold-start delays.
+ */
 async function loadExistingStandups() {
   try {
     const res = await fetch(`${API}/api/standups`);
