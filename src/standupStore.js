@@ -38,11 +38,11 @@ export function createStandupStore() {
      * Returns a copy to prevent direct mutation of the internal array.
      *
      * @returns {Object[]} An array of all submitted standup objects.
-    */
+     */
     getAll() {
       return [...standups];
     },
-     /**
+    /**
      * Serializes all standup entries to a formatted JSON string.
      * Useful for persisting standup data to local storage or an API.
      *
