@@ -21,7 +21,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SitRep</title>
-     <!-- Google Fonts: Inter used for clean, modern UI typography -->
+    <!-- Google Fonts: Inter used for clean, modern UI typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -32,7 +32,7 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-     <!-- 
+    <!-- 
       Top Navigation Bar
       ------------------
       Contains the app brand name, page navigation links, and a dark/light
@@ -55,13 +55,13 @@
           <a data-page="blockers" href="#">Blockers</a>
         </div>
 
-         <!-- Dark/light mode toggle — behaviour handled in script.js -->
+        <!-- Dark/light mode toggle — behaviour handled in script.js -->
         <button class="theme-toggle" id="themeToggle" type="button">
           Dark Mode
         </button>
       </div>
     </nav>
-  <!-- 
+    <!-- 
       Main Content Area
       -----------------
       Contains all four panels. Only one panel is visible at a time;
@@ -97,14 +97,14 @@
                   </select>
                 </div>
               </div>
-               <!-- Agile standup question 1: Yesterday -->
+              <!-- Agile standup question 1: Yesterday -->
 
               <label for="su-yesterday">What did you do yesterday?</label>
               <textarea
                 id="su-yesterday"
                 placeholder="Example: Finished the navbar layout and reviewed the form design."
               ></textarea>
-               <!-- Agile standup question 2: Today -->
+              <!-- Agile standup question 2: Today -->
 
               <label for="su-today">What will you do today?</label>
               <textarea
@@ -117,7 +117,7 @@
                 id="su-blockers"
                 placeholder="Example: Waiting on final color approval or API decision."
               ></textarea>
-   <!-- Agile standup question 3: Blockers -->
+              <!-- Agile standup question 3: Blockers -->
               <button class="submit-btn" id="submitStandup" type="button">
                 Submit StandUp
               </button>
@@ -140,7 +140,7 @@
                 <strong id="progressCount">0</strong>
               </div>
             </div>
- <!-- 
+            <!-- 
               StandUp History List
               --------------------
               Populated dynamically by script.js as standups are submitted.
@@ -277,7 +277,7 @@
         </div>
       </div>
     </main>
- <!-- Main JavaScript: handles all interactivity, state, and DOM updates -->
+    <!-- Main JavaScript: handles all interactivity, state, and DOM updates -->
     <script src="script.js"></script>
   </body>
 </html>

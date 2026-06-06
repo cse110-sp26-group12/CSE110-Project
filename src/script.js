@@ -144,7 +144,7 @@ let totalInProgress = 0;
  * @property {string} blockers   - Any impediments blocking progress. Use 'none' if unblocked.
  * @property {string} statusFlag - Agile status flag: 'On track' | 'In progress' | 'Blocked'.
  */
- 
+
 /**
  * @typedef {Object} StandupResponse
  * @property {string} name       - The team member's name as stored by the server.
@@ -153,7 +153,7 @@ let totalInProgress = 0;
  * @property {string} [blockers] - Reported blockers, if any.
  * @property {string} statusFlag - Server-resolved status: 'On track' | 'In progress' | 'Blocked'.
  */
- 
+
 /**
  * Handles the submission of a daily standup entry.
  *
