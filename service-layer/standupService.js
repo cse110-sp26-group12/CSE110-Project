@@ -1,16 +1,6 @@
-import {
-  standupRepo,
-  teamMemberRepo,
-  teamRepo,
-  userRepo,
-} from '../data-repo/dataRepository.js';
-
-const DEFAULT_TEAM_INVITE_CODE = 'standup-demo-team';
-const DEFAULT_TEAM_NAME = 'Standup Demo Team';
-const DEFAULT_OWNER_USERNAME = 'standup-demo-owner';
-const DEFAULT_OWNER_EMAIL = 'standup-demo-owner@example.test';
-const DEFAULT_PASS_HASH = 'not-used-in-demo';
-
+/**
+ * Custom error for invalid standup form input.
+ */
 export class StandupValidationError extends Error {
   constructor(message) {
     super(message);
@@ -18,6 +8,14 @@ export class StandupValidationError extends Error {
   }
 }
 
+/**
+ * Checks that a required text field is not empty.
+ *
+ * @param {unknown} value
+ * @param {string} fieldName
+ * @returns {string}
+ * @throws {StandupValidationError}
+ */
 function normalizeRequiredText(value, fieldName) {
   if (typeof value !== 'string' || value.trim() === '') {
     throw new StandupValidationError(`${fieldName} is required.`);
@@ -26,6 +24,12 @@ function normalizeRequiredText(value, fieldName) {
   return value.trim();
 }
 
+/**
+ * Turns an empty blocker input into "none" so the frontend has a default value.
+ *
+ * @param {unknown} blockers
+ * @returns {string}
+ */
 function normalizeBlockers(blockers) {
   if (typeof blockers !== 'string' || blockers.trim() === '') {
     return 'none';
@@ -34,6 +38,12 @@ function normalizeBlockers(blockers) {
   return blockers.trim();
 }
 
+/**
+ * Makes a simple username/email-safe slug from a display name.
+ *
+ * @param {string} name
+ * @returns {string}
+ */
 function slugifyName(name) {
   const slug = name
     .toLowerCase()
@@ -43,6 +53,14 @@ function slugifyName(name) {
   return slug || 'member';
 }
 
+/**
+ * Gets an existing demo user or creates one if it does not exist yet.
+ *
+ * @param {object} repositories
+ * @param {string} userName
+ * @param {string} userEmail
+ * @returns {object}
+ */
 function getOrCreateUser(repositories, userName, userEmail) {
   return (
     repositories.userRepo.findByUsername(userName) ||
@@ -54,6 +72,12 @@ function getOrCreateUser(repositories, userName, userEmail) {
   );
 }
 
+/**
+ * Gets the default demo team used by the standup page.
+ *
+ * @param {object} repositories
+ * @returns {object}
+ */
 function getOrCreateDemoTeam(repositories) {
   const owner = getOrCreateUser(
     repositories,
@@ -71,6 +95,13 @@ function getOrCreateDemoTeam(repositories) {
   );
 }
 
+/**
+ * Gets or creates a demo membership for the person submitting the standup.
+ *
+ * @param {object} repositories
+ * @param {string} displayName
+ * @returns {object}
+ */
 function getOrCreateDemoMembership(repositories, displayName) {
   const team = getOrCreateDemoTeam(repositories);
   const memberSlug = slugifyName(displayName);
@@ -109,6 +140,13 @@ function getOrCreateDemoMembership(repositories, displayName) {
   return membership;
 }
 
+/**
+ * Converts a stored standup row into the shape used by the frontend.
+ *
+ * @param {object} row
+ * @param {object} poster
+ * @returns {object}
+ */
 function toFrontendStandup(row, poster) {
   return {
     id: row.id,
@@ -121,6 +159,12 @@ function toFrontendStandup(row, poster) {
   };
 }
 
+/**
+ * Builds the standup service. Repositories can be passed in for testing.
+ *
+ * @param {object} repositories
+ * @returns {object}
+ */
 export function createStandupService(
   repositories = {
     standupRepo,
@@ -130,6 +174,12 @@ export function createStandupService(
   },
 ) {
   return {
+    /**
+     * Validates and saves a new standup update.
+     *
+     * @param {object} data
+     * @returns {Promise<object>}
+     */
     async addStandup(data) {
       const name = normalizeRequiredText(data.name, 'name');
       const done = normalizeRequiredText(data.done, 'done');
@@ -151,6 +201,11 @@ export function createStandupService(
       return toFrontendStandup(row, member);
     },
 
+    /**
+     * Returns all standups for the demo team.
+     *
+     * @returns {Promise<object[]>}
+     */
     async getAllStandups() {
       const team = getOrCreateDemoTeam(repositories);
 
@@ -164,5 +219,3 @@ export function createStandupService(
     },
   };
 }
-
-export const standupService = createStandupService();
