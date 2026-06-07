@@ -11,6 +11,13 @@ import {
   StandupValidationError,
 } from '../service-layer/standupService.js';
 
+/**
+ * Handles the request for getting all standup updates.
+ *
+ * @param {object} req
+ * @param {object} res
+ * @returns {Promise<void>}
+ */
 export async function handleGetStandups(req, res) {
   try {
     const standups = await standupService.getAllStandups();
@@ -23,6 +30,14 @@ export async function handleGetStandups(req, res) {
   }
 }
 
+/**
+ * Handles the request for creating a new standup update.
+ *
+ * @param {object} req
+ * @param {object} res
+ * @param {object} body
+ * @returns {Promise<void>}
+ */
 export async function handlePostStandup(req, res, body) {
   try {
     // 1. Parsing and basic validation
