@@ -1,0 +1,283 @@
+<!doctype html>
+<!-- 
+  SitRep - Agile Team Standup & Organization Tool
+  ================================================
+  A lightweight web app to help agile teams manage their daily standups,
+  track team members, assign tasks, and log blockers — all in one place.
+ 
+  Pages / Panels:
+    1. Daily StandUp  - Submit and view daily standup updates
+    2. Team Board     - Add and manage team members
+    3. Tasks          - Create, track, and complete sprint tasks
+    4. Blockers       - Log, track, and resolve team blockers
+ 
+  External Dependencies:
+    - Google Fonts (Inter) for typography
+    - style.css for all layout and theming
+    - script.js for all interactivity and local state
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SitRep</title>
+    <!-- Google Fonts: Inter used for clean, modern UI typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Main stylesheet: handles layout, theming, dark mode, and component styles -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- 
+      Top Navigation Bar
+      ------------------
+      Contains the app brand name, page navigation links, and a dark/light
+      mode toggle button. The active page link is highlighted via the
+      "active" class, which is updated dynamically by script.js on nav clicks.
+    -->
+    <nav class="navbar">
+      <div class="nav-inner">
+        <div class="brand">SITREP</div>
+        <!-- 
+          Primary navigation links
+          Each link has a data-page attribute used by script.js to show/hide
+          the corresponding panel and update the active state.
+        -->
+
+        <div class="nav-links" aria-label="Primary navigation">
+          <a class="active" data-page="standup" href="#">Daily StandUp</a>
+          <a data-page="team-board" href="#">Team Board</a>
+          <a data-page="tasks" href="#">Tasks</a>
+          <a data-page="blockers" href="#">Blockers</a>
+        </div>
+
+        <!-- Dark/light mode toggle — behaviour handled in script.js -->
+        <button class="theme-toggle" id="themeToggle" type="button">
+          Dark Mode
+        </button>
+      </div>
+    </nav>
+    <!-- 
+      Main Content Area
+      -----------------
+      Contains all four panels. Only one panel is visible at a time;
+      script.js toggles the "hidden" class based on the selected nav link.
+    -->
+    <main class="page">
+      <!-- ── Daily StandUp ─────────────────────────────────── -->
+      <div id="panel-standup" class="panel">
+        <div class="standup-layout">
+          <!-- Left: desc bar + submit form -->
+          <div class="standup-col">
+            <div class="desc-bar">
+              Daily StandUp
+              <span class="desc-sub">Submit your daily update below.</span>
+            </div>
+
+            <div class="form-card">
+              <div class="section-title">
+                <h2>Submit StandUp</h2>
+              </div>
+
+              <div class="field-row">
+                <div>
+                  <label for="su-name">Name</label>
+                  <input id="su-name" type="text" placeholder="Your name" />
+                </div>
+                <div>
+                  <label for="su-status">Status</label>
+                  <select id="su-status">
+                    <option>On track</option>
+                    <option>In progress</option>
+                    <option>Blocked</option>
+                  </select>
+                </div>
+              </div>
+              <!-- Agile standup question 1: Yesterday -->
+
+              <label for="su-yesterday">What did you do yesterday?</label>
+              <textarea
+                id="su-yesterday"
+                placeholder="Example: Finished the navbar layout and reviewed the form design."
+              ></textarea>
+              <!-- Agile standup question 2: Today -->
+
+              <label for="su-today">What will you do today?</label>
+              <textarea
+                id="su-today"
+                placeholder="Example: Connect the standup form to local storage and polish mobile layout."
+              ></textarea>
+
+              <label for="su-blockers">Any blockers?</label>
+              <textarea
+                id="su-blockers"
+                placeholder="Example: Waiting on final color approval or API decision."
+              ></textarea>
+              <!-- Agile standup question 3: Blockers -->
+              <button class="submit-btn" id="submitStandup" type="button">
+                Submit StandUp
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: stats + history -->
+          <div class="standup-col">
+            <div class="metrics-stack">
+              <div class="metric">
+                <span>Submitted today</span>
+                <strong id="submittedCount">0</strong>
+              </div>
+              <div class="metric">
+                <span>Active blockers</span>
+                <strong id="blockerCount">0</strong>
+              </div>
+              <div class="metric">
+                <span>Tasks in progress</span>
+                <strong id="progressCount">0</strong>
+              </div>
+            </div>
+            <!-- 
+              StandUp History List
+              --------------------
+              Populated dynamically by script.js as standups are submitted.
+              Shows the empty state message until at least one entry exists.
+            -->
+            <div class="list-section">
+              <h2 class="list-header">StandUp History</h2>
+              <div id="emptyState" class="empty-state">
+                <p>No standup updates yet.</p>
+                <span>Submitted updates will appear here.</span>
+              </div>
+              <div id="standupList" class="standup-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Team Board ─────────────────────────────────────── -->
+      <div id="panel-team-board" class="panel hidden">
+        <div class="page-top-row">
+          <div class="desc-bar">
+            Team Board
+            <span class="desc-sub">View and manage your team members.</span>
+          </div>
+          <button class="action-btn" id="addMemberBtn" type="button">
+            + Add Member
+          </button>
+        </div>
+
+        <div id="addMemberForm" class="inline-form hidden">
+          <input id="memberNameInput" type="text" placeholder="Member name" />
+          <button class="small-btn" id="confirmAddMember" type="button">
+            Add
+          </button>
+        </div>
+
+        <div class="list-section">
+          <h2 class="list-header">Member List</h2>
+          <div class="member-card">
+            <div id="memberEmpty" class="empty-state">
+              <p>No team members yet.</p>
+              <span>Add members to get started.</span>
+            </div>
+            <div id="memberList" class="member-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Tasks ──────────────────────────────────────────── -->
+      <div id="panel-tasks" class="panel hidden">
+        <div class="page-top-row">
+          <div class="desc-bar">
+            Tasks
+            <span class="desc-sub"
+              >Track assigned tasks and sprint progress.</span
+            >
+          </div>
+          <button class="action-btn" id="createTaskBtn" type="button">
+            + Create Task
+          </button>
+        </div>
+
+        <div id="createTaskForm" class="inline-form hidden">
+          <input
+            id="taskNameInput"
+            type="text"
+            placeholder="Task description"
+          />
+          <button class="small-btn" id="confirmCreateTask" type="button">
+            Add
+          </button>
+        </div>
+
+        <div class="list-section">
+          <h2 class="list-header">Tasks List</h2>
+          <div id="taskEmpty" class="empty-state">
+            <p>No active tasks.</p>
+            <span>Create a task to get started.</span>
+          </div>
+          <div id="taskList" class="item-list"></div>
+        </div>
+
+        <div class="list-section">
+          <h2 class="list-header">Complete Tasks</h2>
+          <div id="completedTaskEmpty" class="empty-state">
+            <p>No completed tasks yet.</p>
+            <span>Completed tasks will appear here.</span>
+          </div>
+          <div id="completedTaskList" class="item-list"></div>
+        </div>
+      </div>
+
+      <!-- ── Blockers ───────────────────────────────────────── -->
+      <div id="panel-blockers" class="panel hidden">
+        <div class="page-top-row">
+          <div class="desc-bar">
+            Blockers
+            <span class="desc-sub"
+              >Log and track issues that need team attention.</span
+            >
+          </div>
+          <button class="action-btn" id="createBlockerBtn" type="button">
+            + Create Blocker
+          </button>
+        </div>
+
+        <div id="createBlockerForm" class="inline-form hidden">
+          <input
+            id="blockerDescInput"
+            type="text"
+            placeholder="Describe the blocker"
+          />
+          <button class="small-btn" id="confirmCreateBlocker" type="button">
+            Add
+          </button>
+        </div>
+
+        <div class="list-section">
+          <h2 class="list-header">Blockers List</h2>
+          <div id="blockerItemEmpty" class="empty-state">
+            <p>No active blockers.</p>
+            <span>Log a blocker to track issues.</span>
+          </div>
+          <div id="blockerItemList" class="item-list"></div>
+        </div>
+
+        <div class="list-section">
+          <h2 class="list-header">Blocker History</h2>
+          <div id="resolvedBlockerEmpty" class="empty-state">
+            <p>No resolved blockers yet.</p>
+            <span>Resolved blockers will appear here.</span>
+          </div>
+          <div id="resolvedBlockerList" class="item-list"></div>
+        </div>
+      </div>
+    </main>
+    <!-- Main JavaScript: handles all interactivity, state, and DOM updates -->
+    <script src="script.js"></script>
+  </body>
+</html>

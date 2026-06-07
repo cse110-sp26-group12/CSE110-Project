@@ -1,0 +1,892 @@
+/**
+ * @fileoverview SE SitRep – Global Stylesheet.
+ *
+ * Defines the complete visual design system for SE SitRep, including
+ * CSS custom properties for light/dark theming, layout primitives,
+ * shared component styles, and page-specific styles for the Daily StandUp,
+ * Team Board, Tasks, and Blockers panels.
+ *
+ * @version 1.0.0
+ */
+
+/* ══════════════════════════════════════════════════════════
+   Design Tokens
+   ══════════════════════════════════════════════════════════
+   All colours and shadows are defined as CSS custom properties
+   on :root (light mode) and overridden on body.dark (dark mode).
+   Components reference only these tokens — never raw colour values —
+   so the entire dashboard re-themes with a single class toggle.
+*/
+
+/**
+ * @namespace LightTheme
+ * @description Default (light) design tokens applied to the `:root` selector.
+ *
+ * @property {color} --nav-bg        - Navbar background; dark charcoal to contrast the warm page.
+ * @property {color} --page-bg       - Main page background; warm off-white for a calm workspace feel.
+ * @property {color} --card-bg       - Card and form surface; slightly lighter than the page background.
+ * @property {color} --text          - Primary body text colour.
+ * @property {color} --muted         - Secondary / helper text; used for labels, roles, and meta info.
+ * @property {color} --border        - Subtle warm-grey border used on cards, inputs, and dividers.
+ * @property {color} --accent        - Brand accent; terracotta-red used for highlights and active states.
+ * @property {color} --button        - Primary button fill colour.
+ * @property {color} --button-hover  - Primary button hover/pressed fill (darker than --button).
+ * @property {color} --shadow        - Box-shadow colour; low-opacity black for depth.
+ * @property {color} --blocker-bg    - Background tint for "Blocked" status badges and cards.
+ * @property {color} --done-bg       - Background tint for "On track" / done status badges.
+ * @property {color} --progress-bg   - Background tint for "In progress" status badges.
+ */
+:root {
+  --nav-bg: #252525;
+  --page-bg: #f3eee6;
+  --card-bg: #faf8f5;
+  --text: #2f2f2f;
+  --muted: #6e665e;
+  --border: #d8cfc2;
+  --accent: #d66a59;
+  --button: #d5644f;
+  --button-hover: #be5242;
+  --shadow: rgba(0, 0, 0, 0.08);
+  --blocker-bg: #fff0ec;
+  --done-bg: #eef7ef;
+  --progress-bg: #fff6e5;
+}
+
+/**
+ * @namespace DarkTheme
+ * @description Dark-mode token overrides applied when `body` carries the `.dark` class.
+ *
+ * Toggled at runtime by the theme toggle button in the navbar.
+ * All tokens match the light-theme names; components require no changes
+ * to support dark mode.
+ *
+ * @property {color} --nav-bg       - Deeper near-black navbar for high contrast.
+ * @property {color} --page-bg      - Dark warm-grey page background.
+ * @property {color} --card-bg      - Slightly lighter card surface than --page-bg.
+ * @property {color} --text         - Off-white primary text for legibility on dark surfaces.
+ * @property {color} --muted        - Warm light-grey for secondary text.
+ * @property {color} --border       - Muted dark border.
+ * @property {color} --accent       - Slightly brighter terracotta for dark-bg contrast.
+ * @property {color} --shadow       - Stronger shadow opacity for dark-mode depth.
+ * @property {color} --blocker-bg   - Deep warm-red tint for blocked status.
+ * @property {color} --done-bg      - Deep green tint for on-track status.
+ * @property {color} --progress-bg  - Deep amber tint for in-progress status.
+ */
+body.dark {
+  --nav-bg: #181818;
+  --page-bg: #1f1e1c;
+  --card-bg: #2b2926;
+  --text: #f4efe8;
+  --muted: #c9bfb4;
+  --border: #5a5149;
+  --accent: #e47a68;
+  --button: #d5644f;
+  --button-hover: #be5242;
+  --shadow: rgba(0, 0, 0, 0.25);
+  --blocker-bg: #3a2420;
+  --done-bg: #223428;
+  --progress-bg: #3a3120;
+}
+
+/* ══════════════════════════════════════════════════════════
+   Global Reset & Base
+   ══════════════════════════════════════════════════════════ */
+
+/**
+ * Applies `box-sizing: border-box` globally so padding and borders
+ * are included in element dimensions throughout the dashboard.
+ */
+* {
+  box-sizing: border-box;
+}
+
+/**
+ * Base body styles.
+ * Uses the Inter typeface (falling back to system sans-serif) and
+ * references design tokens for background and text colour so the full
+ * page re-themes automatically when `.dark` is toggled.
+ */
+body {
+  margin: 0;
+  font-family: 'Inter', Arial, Helvetica, sans-serif;
+  background: var(--page-bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* ══════════════════════════════════════════════════════════
+   Navbar
+   ══════════════════════════════════════════════════════════ */
+
+/**
+ * Sticky top navigation bar shared across all SE SitRep panels.
+ * The accent-coloured bottom border acts as a persistent brand stripe.
+ */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--nav-bg);
+  color: white;
+  border-bottom: 4px solid var(--accent);
+}
+
+/**
+ * Inner flex row that horizontally spaces the brand name, nav links,
+ * and theme toggle within the navbar's max-width container.
+ */
+.nav-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0.9rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/** SE SitRep brand wordmark displayed in the top-left of the navbar. */
+.brand {
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  font-size: 1.15rem;
+}
+
+/**
+ * Horizontal list of navigation links (Daily StandUp, Team Board, Tasks, Blockers).
+ * Links switch panels via JS; active/hover state is shown with an accent underline.
+ */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-size: 0.95rem;
+}
+
+/** Individual nav link; accent underline appears on hover and when `.active`. */
+.nav-links a {
+  color: #f7f2ec;
+  text-decoration: none;
+  padding-bottom: 0.2rem;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.nav-links a.active,
+.nav-links a:hover {
+  border-bottom-color: var(--accent);
+}
+
+/**
+ * Light/Dark mode toggle button in the navbar.
+ * Renders as a ghost button (transparent fill, visible border) against the
+ * dark navbar background.
+ */
+.theme-toggle {
+  border: 1px solid #666;
+  background: transparent;
+  color: white;
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.theme-toggle:hover {
+  border-color: #aaa;
+}
+
+/* ══════════════════════════════════════════════════════════
+   Page Shell
+   ══════════════════════════════════════════════════════════ */
+
+/**
+ * Centred content wrapper shared by all dashboard panels.
+ * Constrains layout to 1180px and adds consistent vertical breathing room.
+ */
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+}
+
+/* ══════════════════════════════════════════════════════════
+   SPA Panel Visibility
+   ══════════════════════════════════════════════════════════ */
+
+/**
+ * Hides a panel from the layout entirely.
+ * The `.hidden` class is toggled by the tab-switching logic in `main.js`
+ * to implement single-page navigation across SE SitRep's four sections.
+ */
+.panel.hidden {
+  display: none;
+}
+
+/* ══════════════════════════════════════════════════════════
+   Shared: Description Bar
+   ══════════════════════════════════════════════════════════ */
+
+/**
+ * Full-width panel header card displaying the section title and subtitle.
+ * Used at the top of the Team Board, Tasks, and Blockers panels.
+ */
+.desc-bar {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px var(--shadow);
+  padding: 0.9rem 1.25rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.15rem;
+}
+
+/**
+ * Subdued subtitle line inside `.desc-bar`.
+ * Provides a short description of the panel's purpose (e.g. "Track your sprint tasks").
+ */
+.desc-sub {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* ══════════════════════════════════════════════════════════
+   Shared: Section List
+   ══════════════════════════════════════════════════════════ */
+
+/**
+ * Wrapper that adds vertical spacing above a list section (tasks, blockers, members).
+ */
+.list-section {
+  margin-top: 1.5rem;
+}
+
+/**
+ * Section heading with an accent bottom border separating it from its item list.
+ * Used above active and completed item lists on the Tasks and Blockers panels.
+ */
+.list-header {
+  margin: 0 0 0.85rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ══════════════════════════════════════════════════════════
+   Shared: Empty State
+   ══════════════════════════════════════════════════════════ */
+
+/**
+ * Placeholder block displayed inside a list section when it has no items.
+ * Uses a dashed border to signal that content is expected here, prompting
+ * team members to submit standups, add tasks, or log blockers.
+ */
+.empty-state {
+  background: var(--card-bg);
+  border: 1px dashed var(--border);
+  padding: 1.75rem 1.25rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+/** Bold primary message in an empty state (e.g. "No standups yet"). */
+.empty-state p {
+  margin: 0;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/** Secondary helper text below the empty state message. */
+.empty-state span {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.9rem;
+}
+
+/* ══════════════════════════════════════════════════════════
+   Shared: Action Button (+ Create / + Add Member)
+   ══════════════════════════════════════════════════════════ */
+
+/**
+ * Ghost-style button that triggers the inline add/create form for
+ * tasks, blockers, or team members. Fills with the accent colour on hover
+ * to clearly communicate its primary action role.
+ */
+.action-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--accent);
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.action-btn:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* ══════════════════════════════════════════════════════════
+   Shared: Inline Add / Create Form
+   ══════════════════════════════════════════════════════════ */
+
+/**
+ * Collapsible inline form that appears directly below the action button
+ * for quickly adding a team member, task, or blocker without navigating away.
+ * Hidden by default; toggled via the `.hidden` class in `main.js`.
+ */
+.inline-form {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(216, 207, 194, 0.18);
+  border: 1px solid var(--border);
+}
+
+.inline-form.hidden {
+  display: none;
+}
+
+/** Text input inside an inline form; inherits font and gains accent focus ring. */
+.inline-form input {
+  flex: 1;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  padding: 0.65rem 0.8rem;
+  font: inherit;
+  outline: none;
+}
+
+.inline-form input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(214, 106, 89, 0.15);
+}
+
+/**
+ * Solid confirm button inside an inline form (e.g. "Add", "Create").
+ * The bottom border creates a subtle pressed/3D effect on click.
+ */
+.small-btn {
+  background: var(--button);
+  color: white;
+  border: 0;
+  border-bottom: 3px solid var(--button-hover);
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.small-btn:hover {
+  background: var(--button-hover);
+}
+
+/* ══════════════════════════════════════════════════════════
+   Shared: Item List (Tasks & Blockers)
+   ══════════════════════════════════════════════════════════ */
+
+/**
+ * Grid container for task and blocker items.
+ * Single-column by default with a consistent gap between items.
+ */
+.item-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+/**
+ * Individual task or blocker row.
+ * Lays out the label (left/flex) and checkbox (right) so team members
+ * can clearly read the item and mark it complete in one glance.
+ */
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 6px var(--shadow);
+}
+
+/** Item label; fills available space so the checkbox stays pinned to the right. */
+.check-item label {
+  flex: 1;
+  margin: 0;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+/** Checkbox styled with the brand accent colour via `accent-color`. */
+.check-item input[type='checkbox'] {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+  margin: 0;
+}
+
+/**
+ * Strikethrough text style applied to completed tasks and resolved blockers.
+ * Muted colour reinforces that the item is no longer blocking progress.
+ */
+.completed-text {
+  color: var(--muted);
+  text-decoration: line-through;
+  font-size: 0.95rem;
+  flex: 1;
+}
+
+/* ══════════════════════════════════════════════════════════
+   Daily StandUp Panel
+   ══════════════════════════════════════════════════════════ */
+
+/**
+ * Two-column grid layout for the Daily StandUp panel.
+ * Left column: the standup submission form.
+ * Right column: live metrics stack + historical standup feed.
+ * Collapses to a single column on narrow viewports.
+ */
+.standup-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/**
+ * Flex column used inside each `.standup-layout` column to stack
+ * child components (form card, metric tiles, feed) vertically.
+ */
+.standup-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ── Standup Form Card ───────────────────────────────────── */
+
+/**
+ * Card container wrapping the standup submission form fields
+ * (name, status, yesterday, today, blockers).
+ */
+.form-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 22px var(--shadow);
+  padding: 1.5rem;
+}
+
+/**
+ * Flex row used as the header of `.form-card` and other panel sections.
+ * Horizontally spaces the section title from optional action elements (e.g. a badge or button).
+ */
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.85rem;
+}
+
+.section-title h2 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+/** Block-level form label with bold weight and margin above each field. */
+label {
+  display: block;
+  font-weight: 700;
+  margin: 1rem 0 0.35rem;
+}
+
+/**
+ * Shared input, textarea, and select styles.
+ * Transparent background lets the card background show through; accent focus
+ * ring matches the brand colour.
+ */
+input,
+textarea,
+select {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  padding: 0.8rem;
+  font: inherit;
+  outline: none;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(214, 106, 89, 0.15);
+}
+
+/** Resizable textarea used for the "Yesterday" and "Today" standup fields. */
+textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+/**
+ * Two-column inline grid used to place the name and status fields
+ * side-by-side in the standup form.
+ */
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/**
+ * Full-width primary submit button for the standup form.
+ * Uppercased label and bottom border reinforce its importance as the
+ * primary call-to-action for daily check-ins.
+ */
+.submit-btn {
+  margin-top: 1.25rem;
+  width: 100%;
+  background: var(--button);
+  color: white;
+  border: 0;
+  border-bottom: 4px solid var(--button-hover);
+  padding: 0.9rem 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: inherit;
+}
+
+.submit-btn:hover {
+  background: var(--button-hover);
+}
+
+/* ── Standup Metrics Stack ───────────────────────────────── */
+
+/**
+ * Vertical stack of metric tiles displayed in the right column of the
+ * standup panel, showing live counts for submissions, blockers, and
+ * in-progress team members.
+ */
+.metrics-stack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+/**
+ * Individual metric tile.
+ * The left accent border visually groups each tile with the brand colour
+ * and draws the eye to the large numeric value inside.
+ */
+.metric {
+  border-left: 4px solid var(--accent);
+  padding: 0.7rem 1rem;
+  background: var(--card-bg);
+  border-top: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+/** Muted label above the metric value (e.g. "Submitted", "Blocked"). */
+.metric span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/** Large numeric value displayed prominently inside a metric tile. */
+.metric strong {
+  font-size: 1.4rem;
+}
+
+/* ── Standup Feed ────────────────────────────────────────── */
+
+/**
+ * Scrollable grid of standup cards showing the team's check-in history
+ * in reverse-chronological order. New standups are prepended to the top.
+ */
+.standup-list {
+  display: grid;
+  gap: 1rem;
+}
+
+/**
+ * Individual standup card rendered for each team member's daily check-in.
+ * Displays name, status badge, yesterday's work, today's plan, and blockers.
+ */
+.standup-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 14px var(--shadow);
+  padding: 1.15rem;
+}
+
+/**
+ * Flex row at the top of each standup card.
+ * Places the team member's name/role on the left and the status badge on the right.
+ */
+.standup-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 0.75rem;
+}
+
+/** Team member name heading inside a standup card. */
+.person {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+/** Muted "Team Member" role label below the name in a standup card. */
+.role {
+  margin: 0.1rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/**
+ * Agile status badge displayed in the top-right corner of each standup card.
+ * The `.done`, `.progress`, and `.blocker` modifiers apply colour-coded
+ * background tints matching the team member's current sprint state.
+ *
+ * @example
+ * <span class="status done">On track</span>
+ * <span class="status progress">In progress</span>
+ * <span class="status blocker">Blocked</span>
+ */
+.status {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 0.25rem 0.45rem;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+/** "On track" status badge — green tint signals healthy sprint progress. */
+.status.done {
+  background: var(--done-bg);
+}
+
+/** "In progress" status badge — amber tint signals ongoing work. */
+.status.progress {
+  background: var(--progress-bg);
+}
+
+/**
+ * "Blocked" status badge — red tint and accent text colour signal
+ * an impediment that requires the team's attention.
+ */
+.status.blocker {
+  background: var(--blocker-bg);
+  color: var(--accent);
+}
+
+/**
+ * Content section within a standup card (Yesterday / Today / Blockers).
+ * A top border separates each section from the one above it.
+ */
+.standup-section {
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--border);
+}
+
+/**
+ * Uppercased section label (e.g. "YESTERDAY", "TODAY", "BLOCKERS")
+ * rendered in muted colour above the section content.
+ */
+.standup-section strong {
+  display: block;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.2rem;
+}
+
+/** Section content paragraph within a standup card. */
+.standup-section p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* ══════════════════════════════════════════════════════════
+   Team Board / Tasks / Blockers — Shared Top Row
+   ══════════════════════════════════════════════════════════ */
+
+/**
+ * Flex row used at the top of the Team Board, Tasks, and Blockers panels.
+ * Places the description bar (`.desc-bar`) alongside the primary action
+ * button (`.action-btn`) so both are vertically aligned.
+ */
+.page-top-row {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/**
+ * When `.desc-bar` is a direct child of `.page-top-row`, it grows to fill
+ * remaining horizontal space, pushing the action button to the far right.
+ */
+.page-top-row .desc-bar {
+  flex: 1;
+}
+
+/* ══════════════════════════════════════════════════════════
+   Team Board — Member List Card
+   ══════════════════════════════════════════════════════════ */
+
+/**
+ * Card container that holds the team member list on the Team Board panel.
+ * Fixed at 50% width (min 300px) to allow room for future board columns.
+ */
+.member-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 22px var(--shadow);
+  padding: 1rem 1.25rem;
+  min-height: 260px;
+  width: 50%;
+  min-width: 300px;
+}
+
+/** Grid container stacking individual member items inside `.member-card`. */
+.member-list {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+}
+
+/**
+ * Individual team member row inside the Team Board.
+ * Displays an avatar initial, name/role info, and a remove button.
+ */
+.member-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem 0.85rem;
+  background: rgba(216, 207, 194, 0.18);
+  border: 1px solid var(--border);
+}
+
+/**
+ * Circular avatar badge showing the first letter of the team member's name.
+ * Uses the brand accent colour as the background for visual consistency.
+ */
+.member-avatar {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+/** Flex column holding the member's name and role label. */
+.member-info {
+  flex: 1;
+  min-width: 0;
+}
+
+/** Bold member name displayed inside `.member-info`. */
+.member-info strong {
+  display: block;
+  font-size: 0.97rem;
+}
+
+/** Muted "Team Member" role label below the name in `.member-info`. */
+.member-info span {
+  color: var(--muted);
+  font-size: 0.83rem;
+}
+
+/**
+ * Ghost remove (×) button at the far right of each member row.
+ * Turns accent-coloured on hover to signal a destructive action.
+ */
+.remove-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0.15rem 0.4rem;
+}
+
+.remove-btn:hover {
+  color: var(--accent);
+}
+
+/* ══════════════════════════════════════════════════════════
+   Responsive Breakpoint
+   ══════════════════════════════════════════════════════════ */
+
+/**
+ * Collapses multi-column layouts to a single column for viewports
+ * narrower than 850px (tablets and mobile devices).
+ *
+ * - `.standup-layout` and `.field-row` stack vertically.
+ * - `.nav-inner` wraps to a vertical flex column.
+ * - `.nav-links` wraps onto multiple lines.
+ * - `.page-top-row` stacks vertically.
+ * - `.member-card` expands to full width.
+ */
+@media (max-width: 850px) {
+  .standup-layout,
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-inner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+  }
+
+  .page-top-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .member-card {
+    width: 100%;
+  }
+}

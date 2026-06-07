@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: sitrep
+    runtime: node
+    plan: free
+    branch: implement/backend-foundation
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: CORS_ORIGIN
+        value: https://cse110-sp26-group12.github.io
