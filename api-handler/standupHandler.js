@@ -12,8 +12,7 @@ import {
 } from '../service-layer/standupService.js';
 
 /**
- * Handles GET requests for standup updates.
- * Gets the data from the service layer and sends it back as JSON.
+ * Handles the request for getting all standup updates.
  *
  * @param {object} req
  * @param {object} res
@@ -32,8 +31,7 @@ export async function handleGetStandups(req, res) {
 }
 
 /**
- * Handles POST requests for a new standup update.
- * Checks the required fields, then passes the standup data to the service layer.
+ * Handles the request for creating a new standup update.
  *
  * @param {object} req
  * @param {object} res

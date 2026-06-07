@@ -1,5 +1,18 @@
+import {
+  standupRepo,
+  teamMemberRepo,
+  teamRepo,
+  userRepo,
+} from '../data-repo/dataRepository.js';
+
+const DEFAULT_TEAM_INVITE_CODE = 'standup-demo-team';
+const DEFAULT_TEAM_NAME = 'Standup Demo Team';
+const DEFAULT_OWNER_USERNAME = 'standup-demo-owner';
+const DEFAULT_OWNER_EMAIL = 'standup-demo-owner@example.test';
+const DEFAULT_PASS_HASH = 'not-used-in-demo';
+
 /**
- * Custom error for invalid standup form input.
+ * Custom error for invalid standup input.
  */
 export class StandupValidationError extends Error {
   constructor(message) {
@@ -25,7 +38,7 @@ function normalizeRequiredText(value, fieldName) {
 }
 
 /**
- * Turns an empty blocker input into "none" so the frontend has a default value.
+ * Uses "none" when blockers are empty.
  *
  * @param {unknown} blockers
  * @returns {string}
@@ -39,7 +52,7 @@ function normalizeBlockers(blockers) {
 }
 
 /**
- * Makes a simple username/email-safe slug from a display name.
+ * Makes a simple slug from a display name.
  *
  * @param {string} name
  * @returns {string}
@@ -54,7 +67,7 @@ function slugifyName(name) {
 }
 
 /**
- * Gets an existing demo user or creates one if it does not exist yet.
+ * Finds a user by username or creates one for the demo flow.
  *
  * @param {object} repositories
  * @param {string} userName
@@ -73,7 +86,7 @@ function getOrCreateUser(repositories, userName, userEmail) {
 }
 
 /**
- * Gets the default demo team used by the standup page.
+ * Gets the demo team, or creates it if it does not exist yet.
  *
  * @param {object} repositories
  * @returns {object}
@@ -96,7 +109,7 @@ function getOrCreateDemoTeam(repositories) {
 }
 
 /**
- * Gets or creates a demo membership for the person submitting the standup.
+ * Gets or creates the demo membership for a standup poster.
  *
  * @param {object} repositories
  * @param {string} displayName
@@ -141,7 +154,7 @@ function getOrCreateDemoMembership(repositories, displayName) {
 }
 
 /**
- * Converts a stored standup row into the shape used by the frontend.
+ * Converts a repo standup row into the frontend format.
  *
  * @param {object} row
  * @param {object} poster
@@ -160,7 +173,7 @@ function toFrontendStandup(row, poster) {
 }
 
 /**
- * Builds the standup service. Repositories can be passed in for testing.
+ * Creates the standup service.
  *
  * @param {object} repositories
  * @returns {object}
@@ -175,7 +188,7 @@ export function createStandupService(
 ) {
   return {
     /**
-     * Validates and saves a new standup update.
+     * Adds a new standup update after validating the input.
      *
      * @param {object} data
      * @returns {Promise<object>}
@@ -202,7 +215,7 @@ export function createStandupService(
     },
 
     /**
-     * Returns all standups for the demo team.
+     * Gets all standups for the demo team.
      *
      * @returns {Promise<object[]>}
      */
@@ -219,3 +232,5 @@ export function createStandupService(
     },
   };
 }
+
+export const standupService = createStandupService();
