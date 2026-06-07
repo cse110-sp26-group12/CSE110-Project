@@ -1,5 +1,39 @@
+/**
+ * Main frontend script for the SitRep application.
+ *
+ * This file handles:
+ * - Navigation between different panels
+ * - Theme switching
+ * - Daily standup submission and display
+ * - Team member management
+ * - Task creation and completion
+ * - Blocker creation and resolution
+ * - Loading existing standup entries from the backend
+ */
+
 // ── Helpers ───────────────────────────────────────────────────────────
+
+/**
+ * Base URL for the SitRep backend API.
+ * @constant {string}
+ */
 const API = 'https://sitrep-q52s.onrender.com';
+/**
+ * Represents a daily standup entry.
+ *
+ * @typedef {Object} Standup
+ * @property {string} name - Name of the team member.
+ * @property {string} done - Work completed yesterday.
+ * @property {string} todo - Work planned for today.
+ * @property {string} blockers - Any blockers reported by the team member.
+ * @property {string} [submittedAt] - ISO timestamp showing when the standup was submitted.
+ */
+/**
+ * Escapes special HTML characters in a string to prevent unsafe HTML injection.
+ *
+ * @param {string} str - The raw string entered by the user.
+ * @returns {string} The escaped string that is safe to insert into HTML.
+ */
 function escapeHtml(str) {
   return str
     .replace(/&/g, '&amp;')
@@ -9,6 +43,15 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+/**
+ * Creates a standup object using form input values.
+ *
+ * @param {string} name - Name of the team member.
+ * @param {string} done - Work completed yesterday.
+ * @param {string} todo - Work planned for today.
+ * @param {string} blockers - Any blockers or issues.
+ * @returns {Standup} A new standup object with a submission timestamp.
+ */
 function createStandup(name, done, todo, blockers) {
   return { name, done, todo, blockers, submittedAt: new Date().toISOString() };
 }
@@ -51,6 +94,20 @@ let totalSubmissions = 0;
 let totalBlockers    = 0;
 let totalInProgress  = 0;
 
+/**
+ * Handles the Daily StandUp form submission.
+ *
+ * This function:
+ * - Reads user input from the form
+ * - Validates required fields
+ * - Sends the standup data to the backend
+ * - Creates a new standup card in the UI
+ * - Updates dashboard counters
+ * - Clears the form after successful submission
+ *
+ * @async
+ * @returns {Promise<void>}
+ */
 submitBtn.addEventListener('click', async () => {
   const name      = document.getElementById('su-name').value.trim();
   const status    = document.getElementById('su-status').value;
@@ -134,6 +191,15 @@ addMemberBtn.addEventListener('click', () => {
   if (!addMemberForm.classList.contains('hidden')) memberNameInput.focus();
 });
 
+/**
+ * Adds a new team member to the Team Board.
+ *
+ * The function reads the member name from the input field,
+ * creates a new member card, adds a remove button, and updates
+ * the empty-state message.
+ *
+ * @returns {void}
+ */
 function addMember() {
   const name = memberNameInput.value.trim();
   if (!name) return;
@@ -180,6 +246,14 @@ createTaskBtn.addEventListener('click', () => {
   if (!createTaskForm.classList.contains('hidden')) taskNameInput.focus();
 });
 
+/**
+ * Creates a new task item and adds it to the active task list.
+ *
+ * When the checkbox is selected, the task is moved from the active
+ * task list to the completed task list.
+ *
+ * @returns {void}
+ */
 function createTask() {
   const name = taskNameInput.value.trim();
   if (!name) return;
@@ -232,6 +306,15 @@ createBlockerBtn.addEventListener('click', () => {
   if (!createBlockerForm.classList.contains('hidden')) blockerDescInput.focus();
 });
 
+
+/**
+ * Creates a new blocker item and adds it to the active blocker list.
+ *
+ * When the checkbox is selected, the blocker is moved from the active
+ * blocker list to the resolved blocker list.
+ *
+ * @returns {void}
+ */
 function createBlockerItem() {
   const desc = blockerDescInput.value.trim();
   if (!desc) return;
@@ -266,6 +349,16 @@ function createBlockerItem() {
 confirmCreateBlocker.addEventListener('click', createBlockerItem);
 blockerDescInput.addEventListener('keydown', e => { if (e.key === 'Enter') createBlockerItem(); });
 //── Data Sync: Load Existing Entries ───────────────────────────────────
+/**
+ * Loads existing standup entries from the backend database.
+ *
+ * This function sends a GET request to the standup API, renders each
+ * returned standup as a card, and updates the dashboard counters based
+ * on the loaded data.
+ *
+ * @async
+ * @returns {Promise<void>}
+ */
 async function loadExistingStandups() {
   try {
     // 1. Fetch the data from the server (Defaults to a GET request)
