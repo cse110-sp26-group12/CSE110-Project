@@ -65,4 +65,3 @@ Initial project setup and quality pipeline.
 - GitHub Actions CI: lint, format check, test, build placeholder
 - ESLint flat config, Prettier, Jest
 - Sprint planning and early frontend placeholder (`src/standup.js`)
-
