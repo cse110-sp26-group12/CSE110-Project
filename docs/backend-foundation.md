@@ -126,10 +126,9 @@ Function calls for single-table CRUD operations
 _e.g._
 
 ```js
-
-user.findById(user_id=66)
-user.findByUsername(user_name="jhops48")
-team_membership.findById(user_id=66, team_id=66)
+user.findById((user_id = 66));
+user.findByUsername((user_name = 'jhops48'));
+team_membership.findById((user_id = 66), (team_id = 66));
 ```
 
 ### Expected to Database

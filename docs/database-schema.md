@@ -118,7 +118,7 @@ POST {ORIGIN}/api/standups
 /**
  * ===[Request]===
  * headers: 'Content-Type' : 'application/json'
- * 
+ *
  * body (JSON): {
  *  name: "Thomas Powell"
  *  done: "Software engineering or something"
@@ -126,14 +126,14 @@ POST {ORIGIN}/api/standups
  *  blockers: ""
  *  statusFlag: "In progress"
  * }
- * 
+ *
  * ===[Response]===
  *
  * headers: {
  *  201 OK (if successful) or 400/500
  *  'Content-Type' : 'application/json'
  * }
- * 
+ *
  * body (JSON): {
  *  name: 'Thomas Powell'
  *  done: 'Software engineering or something'
@@ -141,7 +141,7 @@ POST {ORIGIN}/api/standups
  *  blockers: ''
  *  statusFlag: 'In progress'
  * }
- * 
+ *
 ```
 
 ```js
@@ -153,7 +153,7 @@ GET {ORIGIN}/api/standups
  *  200 OK (if successful) or 500
  *  'Content-Type' : 'application/json'
  * }
- * 
+ *
  * body (JSON array): [
  *  {
  *   id: 1
@@ -164,11 +164,11 @@ GET {ORIGIN}/api/standups
  *   submittedAt: '2024-02-26T14:30:00+08:00'
  *   statusFlag: 'In progress'
  *  },
- *  {...}, 
- *  {...}, 
+ *  {...},
+ *  {...},
  *  ...
  * ]
- * 
+ *
 ```
 
 ##### Derived Fields
