@@ -108,28 +108,67 @@ All fields are required. Parsing and type validation will be handled at the API 
 }
 ```
 
-##### Store API
+##### Standup API
 
-The in-memory store at `src/standupStore.js` exposes:
-
-- `add(posted_by, for_team, name, done, todo, blockers)`: creates a standup and pushes it to the store, returns the new standup
-- `getAll()`: returns all stored standups
-- `serialize()`: returns all standups serialized to pretty-printed JSON
-
-Use `createStandupStore()` for a fresh instance (useful in tests) or import the default singleton `standupStore` for app-wide use.
+Standups are read and written from client using the following methods:
 
 ```js
-import { standupStore } from './standupStore.js';
+//Posts a standup for a team member
+POST {ORIGIN}/api/standups
+/**
+ * ===[Request]===
+ * headers: 'Content-Type' : 'application/json'
+ * 
+ * body (JSON): {
+ *  name: "Thomas Powell"
+ *  done: "Software engineering or something"
+ *  todo: "Talk at 200 people about some SNCA"
+ *  blockers: ""
+ *  statusFlag: "In progress"
+ * }
+ * 
+ * ===[Response]===
+ *
+ * headers: {
+ *  201 OK (if successful) or 400/500
+ *  'Content-Type' : 'application/json'
+ * }
+ * 
+ * body (JSON): {
+ *  name: 'Thomas Powell'
+ *  done: 'Software engineering or something'
+ *  todo: 'Talk at 200 people about some SNCA'
+ *  blockers: ''
+ *  statusFlag: 'In progress'
+ * }
+ * 
+```
 
-standupStore.add(
-  66,
-  66,
-  'Kyle',
-  'closed Issue #11',
-  'pick up Issue #20',
-  'none',
-);
-console.log(standupStore.serialize());
+```js
+//Gets a list of existing standups for a given team
+GET {ORIGIN}/api/standups
+/**
+ * ===[Response]===
+ * headers: {
+ *  200 OK (if successful) or 500
+ *  'Content-Type' : 'application/json'
+ * }
+ * 
+ * body (JSON array): [
+ *  {
+ *   id: 1
+ *   name: 'Thomas Powell'
+ *   done: 'Software engineering or something'
+ *   todo: 'Talk at 200 people about some SNCA'
+ *   blockers: 'none'
+ *   submittedAt: '2024-02-26T14:30:00+08:00'
+ *   statusFlag: 'In progress'
+ *  },
+ *  {...}, 
+ *  {...}, 
+ *  ...
+ * ]
+ * 
 ```
 
 ##### Derived Fields
@@ -144,6 +183,7 @@ CREATE TABLE standups (
     worked_on       TEXT    NULL,
     will_work_on    TEXT    NULL,
     blocked_by      TEXT    NULL,
+    status_flag     TEXT    NOT NULL CHECK(status_flag IN ('In progress', 'On track'))
     created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
     updated_at      TEXT    NOT NULL DEFAULT (datetime('now')),
     kill_after      TEXT    NULL

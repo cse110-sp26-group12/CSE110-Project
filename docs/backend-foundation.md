@@ -33,15 +33,14 @@ _e.g._
 ```js
 
 {
-    "posted_by_member" : 66,
+    "posted_by" : 66,
     "for_team" : 66,
     "worked_on" : "Roblox content creation",
     "will_work_on" : "Nothing",
-    "blockers" : "My mom"
+    "blockers" : "My mom",
+    "status_flag" : "In progress" //status flag is stored internally separate from blocker status
 }
 ```
-
-- Other web stuff I'm definitely missing but it can be added here later
 
 ### Expected to Service Layer
 
@@ -67,7 +66,7 @@ HTTP response
 ### Constraints
 
 - WILL NOT read or write storage directly
-- WILL NOT run conditional logic beyond input parsing and for generating errors
+- WILL NOT run conditional logic beyond input parsing and error generation
 
 ---
 
@@ -126,11 +125,11 @@ Function calls for single-table CRUD operations
 
 _e.g._
 
-```sql
+```js
 
-user.get(user_id=66)
-user.find_by_username("jhops48")
-team_membership.get_active(user_id=66, team_id=66)
+user.findById(user_id=66)
+user.findByUsername(user_name="jhops48")
+team_membership.findById(user_id=66, team_id=66)
 ```
 
 ### Expected to Database
@@ -157,7 +156,7 @@ Direct data returns
 ### Constraints
 
 - Repo methods access one table at a time
-- Repo does not handle any kind of logic, only CRUD operations
+- Repo does not handle any kind of business logic, only CRUD operations
 - Exact implementation here (and only here) is dependent on chosen database framework
 
 ## Database
