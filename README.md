@@ -12,9 +12,6 @@ https://youtu.be/0BIYtntkG2A
 
 ## Local Development Setup
 
-
-
-
 1. Install Node.js 20+
 2. Clone the repository
 3. Install dependencies
