@@ -29,3 +29,8 @@ npm run lint
 npm test
 npm run format:check
 ```
+
+To step up server locally:
+```
+npm start
+```
